@@ -9,3 +9,6 @@ Most other data formats heavily rely on special characters which often appear in
 - LLMs can be a bit unreliable at generating XML, closing tags often get omitted. Text interspersed with XML isn't valid. Unclosed XML isn't valid: streaming parsers do hack around this as they do for JSON.
 - YAML and TOML are messy with too many special or control characters to escape
 - Markdown is tricky to structure and has a lot of special characters to escape
+
+## Specification
+ASLAN files have the extension ```.llm``` or ```.aslan```.
