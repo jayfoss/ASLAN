@@ -16,7 +16,7 @@ ASLAN files SHOULD have the extension ```.llm``` or ```.aslan```.
 ASLAN data consists of plaintext strings with a series of special tokens. To avoid confusion with LLM tokens, this spec uses the term 'ASLAN delimiter(s)', or just 'delimiter(s)' instead of 'token' from now on.
 
 ### 1. Prefix
-ASLAN delimiters start with a customizable prefix. All implementations MUST provide the default prefixes ```llm``` and ```aslan```.
+ASLAN delimiters start with a customizable prefix ```<PREFIX>```. All implementations MUST provide the default prefixes ```llm``` and ```aslan```.
 
 The delimiter prefix acts as a namespace to ensure external data also using ASLAN within a stream is ignored by the parser.
 
