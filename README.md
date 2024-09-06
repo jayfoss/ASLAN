@@ -30,3 +30,8 @@ All ASLAN content is a child or subchild of the root. Strings with no delimiters
 ### 3. Delimiter format
 Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` with optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```. 
 Optional arguments are designed to allow a system developer to extend or modify the behavior of the parser at runtime.
+
+### 4. Delimiter content
+Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric characters and underscores, and may not start or end with an underscore.
+
+In most cases, the content is the name of a data field or instruction but there are some special cases.
