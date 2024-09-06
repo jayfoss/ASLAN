@@ -44,5 +44,8 @@ Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric character
 
 In most cases, the content is the name of a data field or instruction but there are some special cases which will be discussed later in this spec.
 
-### 5. Delimiter suffix
+### 5. Delimiter suffixes
 The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```i```, ```d```, ```o```, ```a```, ```c```, ```e```.
+
+#### 5.1 The ```i``` suffix
+The ```i``` suffix denotes an ```instruction```
