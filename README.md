@@ -35,3 +35,6 @@ Optional arguments are designed to allow a system developer to extend or modify 
 Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric characters and underscores, and may not start or end with an underscore.
 
 In most cases, the content is the name of a data field or instruction but there are some special cases.
+
+### 5. Delimiter suffix
+The ```<SUFFIX>``` in a delimiter must be a single character from the following list ```i```, ```d```, ```b```, ```c```, ```e```.
