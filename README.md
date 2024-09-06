@@ -12,3 +12,5 @@ Most other data formats heavily rely on special characters which often appear in
 
 ## Specification
 ASLAN files have the extension ```.llm``` or ```.aslan```.
+
+ASLAN data consists of plaintext strings with a series of special tokens. To avoid confusion with LLM tokens, this spec uses the term 'ASLAN delimiter(s)', or just 'delimiter(s)' instead of 'token' from now on.
