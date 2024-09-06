@@ -22,6 +22,8 @@ The delimiter prefix acts as a namespace to ensure external data also using ASLA
 
 Prefixes MUST only contain alphanumeric characters but to maximize readability and minimize LLM generation mistakes, it is RECOMMENDED to use only lower case characters and numbers.
 
+To minimize token usage in LLM calls, it is RECOMMENDED that prefixes be <= 7 characters.
+
 ### 2. The root
 All ASLAN content is a child or subchild of the root. Strings with no delimiters are valid ASLAN and considered the only child of the root.
 
