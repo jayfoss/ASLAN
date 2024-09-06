@@ -11,6 +11,16 @@ Most other data formats heavily rely on special characters which often appear in
 - Markdown is tricky to structure and has a lot of special characters to escape
 
 ## Specification
-ASLAN files have the extension ```.llm``` or ```.aslan```.
+ASLAN files SHOULD have the extension ```.llm``` or ```.aslan```.
 
 ASLAN data consists of plaintext strings with a series of special tokens. To avoid confusion with LLM tokens, this spec uses the term 'ASLAN delimiter(s)', or just 'delimiter(s)' instead of 'token' from now on.
+
+### 1. Prefix
+ASLAN delimiters start with a customizable prefix. All implementations MUST provide the default prefixes ```llm``` and ```aslan```.
+
+The delimiter prefix acts as a namespace to ensure external data also using ASLAN within a stream is ignored by the parser.
+
+### 2. The root
+All ASLAN content is a child or subchild of the root. Strings with no delimiters are valid ASLAN and considered the only child of the root.
+
+```The quick brown fox jumps over the lazy dog``` is valid ASLAN.
