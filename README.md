@@ -24,3 +24,7 @@ The delimiter prefix acts as a namespace to ensure external data also using ASLA
 All ASLAN content is a child or subchild of the root. Strings with no delimiters are valid ASLAN and considered the only child of the root.
 
 ```The quick brown fox jumps over the lazy dog``` is valid ASLAN.
+
+### 3. Delimiter format
+Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` with optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```. 
+Optional arguments are designed to allow a system developer to extend or modify the behavior of the parser at runtime.
