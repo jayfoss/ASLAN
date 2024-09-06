@@ -35,7 +35,7 @@ All ASLAN content is a child or subchild of the root. Strings with no delimiters
 ```The quick brown fox jumps over the lazy dog``` is valid ASLAN.
 
 ### 3. Delimiter format
-Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` or ```[<PREFIX><SUFFIX>]``` depending on the suffix. Delimiters may have optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```, with our without content depending on the suffix.
+Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` or ```[<PREFIX><SUFFIX>]``` depending on the suffix. Delimiters may have optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```, with or without content depending on the suffix.
 
 Optional arguments are designed to allow a system developer to extend or modify the behavior of the parser at runtime.
 
