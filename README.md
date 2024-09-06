@@ -20,6 +20,8 @@ ASLAN delimiters start with a customizable prefix ```<PREFIX>```. All implementa
 
 The delimiter prefix acts as a namespace to ensure external data also using ASLAN within a stream is ignored by the parser.
 
+Prefixes MUST only contain alphanumeric characters but to maximize readability and minimize LLM generation mistakes, it is RECOMMENDED to use only lower case characters and numbers.
+
 ### 2. The root
 All ASLAN content is a child or subchild of the root. Strings with no delimiters are valid ASLAN and considered the only child of the root.
 
