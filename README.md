@@ -88,7 +88,11 @@ A ```data``` field can be empty by immediately following it with another ```data
 
 Of course, a ```data``` delimiter is not necessary, since strings with no delimiters are valid ASLAN. Implementations MUST fill a ```_default``` field with undelimited (or only ```field-scope``` delimited) content, unless the default field has been renamed (See 2.1).
 
-By default, duplicate ASLAN fields in the same block scope have their values merged via concatenation.
+By default, duplicate ASLAN fields in the same block scope have their values merged via concatenation if they are primitives. Duplicate ASLAN fields in the same block scope with non-primitive values such as ```object``` or ```array``` are always ignored, taking the first version of the field instead.
+
+The ```data``` delimiter has a single extension which species how duplicate instances of the key in the same block scope behave for primitives. ```<ARG0>``` may contain the value ```a```, ```f``` or ```l``` for ```append``` (the default behavior), ```first``` (to take the first occurrence of the key in the block scope), ```last``` (to take the last occurrence of the key in the block scope) respectively. Implementations may track this however they wish.
+
+The duplicate behavior definition MUST be applied to the first duplicate ```data``` delimiter in a block scope. If there are multiple duplicate behavior definitions for the same key in a block, all after the first are ignored.
 
 #### 6.1 Example ```data``` usage
 1. The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
