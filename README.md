@@ -53,6 +53,7 @@ In most cases, the content is the name of a data field or instruction but there 
 
 ### 5. Delimiter suffixes
 The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```, ```v```.
+All other alphanumeric characters both upper and lower case are reserved for future use.
 
 #### 5.1 The ```d``` suffix
 The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON. ```data``` delimiters are ```block-scope```.
