@@ -45,7 +45,25 @@ Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric character
 In most cases, the content is the name of a data field or instruction but there are some special cases which will be discussed later in this spec.
 
 ### 5. Delimiter suffixes
-The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```i```, ```d```, ```o```, ```a```, ```c```, ```e```.
+The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```o```, ```d```, ```i```, ```a```, ```c```, ```e```, ```p```.
 
-#### 5.1 The ```i``` suffix
-The ```i``` suffix denotes an ```instruction```
+#### 5.1 The ```o``` suffix
+The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object.
+
+#### 5.2 The ```d``` suffix
+The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON.
+
+#### 5.3 The ```i``` suffix
+The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field.
+
+#### 5.4 The ```a``` suffix
+The ```a``` suffix denotes an ```array``` and can be thought of as similar to a JSON array.
+
+#### 5.5 The ```c``` suffix
+The ```c``` suffix denotes a ```comment```. Subsequent content will be ignored by the parser until a valid ASLAN delimiter with the known current prefix is reached.
+
+#### 5.6 The ```e``` suffix
+The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored by the parser until a corresponding ```e``` suffix delimiter is reached.
+
+#### 5.7 The ```p``` suffix
+The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state.
