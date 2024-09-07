@@ -132,3 +132,7 @@ By convention, we assume the named field for the root is the underlying variable
 ```typescript
 const root = {};
 ```
+
+```object``` delimiters immediately after ```data``` delimiters will start a new nested block scope on the corresponding field. Every block in ASLAN is self-closing, but it is possible to close a block early with another ```object``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```object``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
+
+Each closing ```object``` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope, in which case all extraneous ```object``` delimiters will be ignored.
