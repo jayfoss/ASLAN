@@ -92,7 +92,7 @@ The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
 ```
 
 ### 7. Using ```object```s
-The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
+Almost all ASLAN fields are considered strings by default. The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
 
 By convention, we treat the named field for the root as if it was a variable, equivalent to this:
 ```typescript
