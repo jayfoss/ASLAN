@@ -67,3 +67,6 @@ The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored b
 
 #### 5.7 The ```p``` suffix
 The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state.
+
+### 6. Using ```object```s
+The root is considered an implicit object. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```json {}```. By convention, we treat the named field for the root as if it was a variable ```typescript const root = {};```
