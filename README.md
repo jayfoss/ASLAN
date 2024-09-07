@@ -34,6 +34,8 @@ All ASLAN content is a child or subchild of the root. Strings with no delimiters
 
 ```The quick brown fox jumps over the lazy dog``` is valid ASLAN.
 
+The root is a pseudo element that never appears in the output.
+
 ### 3. Delimiter format
 Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` or ```[<PREFIX><SUFFIX>]``` depending on the suffix. Delimiters may have optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```, with or without content depending on the suffix.
 
@@ -69,9 +71,9 @@ The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored b
 The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state.
 
 ### 6. Using ```object```s
-The root is considered an implicit object. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object 
-```json
-{}
-```.
+The root is considered an implicit object. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
 
-By convention, we treat the named field for the root as if it was a variable ```typescript const root = {};```
+By convention, we treat the named field for the root as if it was a variable, equivalent to this:
+```typescript
+const root = {};
+```
