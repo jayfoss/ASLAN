@@ -47,7 +47,7 @@ Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric character
 In most cases, the content is the name of a data field or instruction but there are some special cases which will be discussed later in this spec.
 
 ### 5. Delimiter suffixes
-The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```.
+The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```, ```v```.
 
 #### 5.1 The ```d``` suffix
 The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON.
@@ -69,6 +69,9 @@ The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored b
 
 #### 5.7 The ```p``` suffix
 The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state.
+
+#### 5.8 The ```v``` suffix
+The ```v``` suffix denotes a ```void```. This is equivalent to ```null``` in most languages.
 
 ### 6. Using ```data```
 The ```data``` delimiter is the most common way of creating structured data in ASLAN. Each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are added to the created field until any of ```data```, ```object```, ```comment``` are reached.
