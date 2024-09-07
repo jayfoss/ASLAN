@@ -47,13 +47,13 @@ Delimiter content in ```<CONTENT>``` MUST only consist of alphanumeric character
 In most cases, the content is the name of a data field or instruction but there are some special cases which will be discussed later in this spec.
 
 ### 5. Delimiter suffixes
-The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```o```, ```d```, ```i```, ```a```, ```c```, ```e```, ```p```.
+The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```.
 
-#### 5.1 The ```o``` suffix
-The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object.
-
-#### 5.2 The ```d``` suffix
+#### 5.1 The ```d``` suffix
 The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON.
+
+#### 5.2 The ```o``` suffix
+The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object.
 
 #### 5.3 The ```i``` suffix
 The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field.
