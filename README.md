@@ -37,6 +37,9 @@ All ASLAN content is a child or subchild of the root. Strings with no delimiters
 The root is a pseudo element that never appears in the output.
 
 #### 2.1 Default field
+Strings with no delimiters or ```field-scope``` delimiters only will always be inserted into the ```_default``` field in the root, unless the ```_default``` field has been renamed.
+
+Implementations MUST provide a way to rename the ```_default``` field. In other words, system developers MUST be able to instruct the parser to output content that would go in the ```_default``` field into a field of a different name.
 
 ### 3. Delimiter format
 Delimiters MUST have the format ```[<PREFIX><SUFFIX>_<CONTENT>]``` or ```[<PREFIX><SUFFIX>]``` depending on the suffix. Delimiters may have optional arguments of the form ```[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]```, with or without content depending on the suffix.
@@ -82,7 +85,7 @@ The next ```data``` field encountered will be added to the current ```object``` 
 
 A ```data``` field can be empty by immediately following it with another ```data``` delimiter, or a ```comment``` delimiter with no subsequent ```field-scope``` delimiters.
 
-Of course, a ```data``` delimiter is not necessary, since strings with no delimiters are valid ASLAN. Implementations MUST fill a ```_default``` field with undelimited content, unless the default field has been renamed (See 2.1).
+Of course, a ```data``` delimiter is not necessary, since strings with no delimiters are valid ASLAN. Implementations MUST fill a ```_default``` field with undelimited (or only ```field-scope``` delimited) content, unless the default field has been renamed (See 2.1).
 
 #### 6.1 Example ```data``` usage
 1. The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
