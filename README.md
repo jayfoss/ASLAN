@@ -73,7 +73,7 @@ The ```p``` suffix denotes a ```part```. This creates a split point in the data 
 #### 5.8 The ```v``` suffix
 The ```v``` suffix denotes a ```void```. This is equivalent to ```null``` in most languages. ```void``` delimiters are ```field-scope```.
 
-### 6. Using ```data```
+### 6. Rules for ```data```
 The ```data``` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax ```[<PREFIX>d_<CONTENT>]``` where ```<CONTENT>``` will become the name of the field. Each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are added to the added field until any of ```data```, ```object```, ```comment``` are reached.
 
 The next ```data``` field encountered will be added to the current ```object``` scope as before.
