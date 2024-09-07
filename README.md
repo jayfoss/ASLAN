@@ -52,16 +52,16 @@ In most cases, the content is the name of a data field or instruction but there 
 The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```, ```v```.
 
 #### 5.1 The ```d``` suffix
-The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON.
+The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON. ```data``` delimiters are ```block-scope```.
 
 #### 5.2 The ```o``` suffix
-The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object.
+The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object. ```object``` delimiters are ```block-scope```.
 
 #### 5.3 The ```i``` suffix
 The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field. ```instruction``` delimiters are ```field-scope```.
 
 #### 5.4 The ```a``` suffix
-The ```a``` suffix denotes an ```array``` and can be thought of as similar to a JSON array.
+The ```a``` suffix denotes an ```array``` and can be thought of as similar to a JSON array. ```array``` delimiters are ```block-scope```.
 
 #### 5.5 The ```c``` suffix
 The ```c``` suffix denotes a ```comment```. Subsequent content will be ignored by the parser until a valid ASLAN delimiter with the known current prefix is reached. ```comment``` delimiters are ```field-scope```.
