@@ -56,25 +56,40 @@ The ```d``` suffix denotes ```data``` and can be thought of as similar to a fiel
 The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object.
 
 #### 5.3 The ```i``` suffix
-The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field.
+The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field. ```instruction``` delimiters are ```field-scope```.
 
 #### 5.4 The ```a``` suffix
 The ```a``` suffix denotes an ```array``` and can be thought of as similar to a JSON array.
 
 #### 5.5 The ```c``` suffix
-The ```c``` suffix denotes a ```comment```. Subsequent content will be ignored by the parser until a valid ASLAN delimiter with the known current prefix is reached.
+The ```c``` suffix denotes a ```comment```. Subsequent content will be ignored by the parser until a valid ASLAN delimiter with the known current prefix is reached. ```comment``` delimiters are ```field-scope```.
 
 #### 5.6 The ```e``` suffix
-The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored by the parser until a corresponding ```e``` suffix delimiter is reached.
+The ```e``` suffix denotes an ```escape```. Subsequent content will be ignored by the parser until a corresponding ```e``` suffix delimiter is reached. ```escape``` delimiters are ```field-scope```.
 
 #### 5.7 The ```p``` suffix
-The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state.
+The ```p``` suffix denotes a ```part```. This creates a split point in the data content, essentially turning what would be a string into an array of part strings, without needing to use indices or be in an ```array``` state. ```part``` delimiters are ```field-scope```.
 
 #### 5.8 The ```v``` suffix
-The ```v``` suffix denotes a ```void```. This is equivalent to ```null``` in most languages.
+The ```v``` suffix denotes a ```void```. This is equivalent to ```null``` in most languages. ```void``` delimiters are ```field-scope```.
 
 ### 6. Using ```data```
-The ```data``` delimiter is the most common way of creating structured data in ASLAN. Each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are added to the created field until any of ```data```, ```object```, ```comment``` are reached.
+The ```data``` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax ```[<PREFIX>d_<CONTENT>]``` where ```<CONTENT>``` will become the name of the field. Each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are added to the added field until any of ```data```, ```object```, ```comment``` are reached.
+
+The next ```data``` field encountered will be added to the current ```object``` scope as before.
+
+A ```data``` field can be empty by immediately following it with another ```data``` delimiter, or a ```comment``` delimiter with no subsequent ```field-scope``` delimiters.
+
+#### 6.1 Example ```data``` usage
+The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello ",
+  "lo": "World!"
+}
+```
 
 ### 7. Using ```object```s
 The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
