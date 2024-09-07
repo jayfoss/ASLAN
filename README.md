@@ -81,11 +81,21 @@ The next ```data``` field encountered will be added to the current ```object``` 
 A ```data``` field can be empty by immediately following it with another ```data``` delimiter, or a ```comment``` delimiter with no subsequent ```field-scope``` delimiters.
 
 #### 6.1 Example ```data``` usage
-The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
+1. The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
 
 ```json
 {
   "_default": null,
+  "hi": "Hello ",
+  "lo": "World!"
+}
+```
+
+2. The string ```This is still valid.[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
+
+```json
+{
+  "_default": "This is still valid.",
   "hi": "Hello ",
   "lo": "World!"
 }
