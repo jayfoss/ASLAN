@@ -87,6 +87,8 @@ A ```data``` field can be empty by immediately following it with another ```data
 
 Of course, a ```data``` delimiter is not necessary, since strings with no delimiters are valid ASLAN. Implementations MUST fill a ```_default``` field with undelimited (or only ```field-scope``` delimited) content, unless the default field has been renamed (See 2.1).
 
+By default, duplicate ASLAN fields in the same block scope have their values merged via concatenation.
+
 #### 6.1 Example ```data``` usage
 1. The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
 
@@ -104,6 +106,16 @@ Of course, a ```data``` delimiter is not necessary, since strings with no delimi
 {
   "_default": "This is still valid.",
   "hi": "Hello ",
+  "lo": "World!"
+}
+```
+
+2. The string ```[asland_hi]Hello [asland_lo]World! [asland_hi]Hello``` is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello Hello",
   "lo": "World!"
 }
 ```
