@@ -149,7 +149,7 @@ Every ```data``` delimiter inside an ```object``` block will create a field in t
 ```instruction```s operate on the ```part``` within which they are found. A string field with no explicit ```part``` delimiters is considered a single ```part```.
 
 When the parser encounters an ```instruction```, it MUST emit an event containing:
-1. the value of the ```part``` (this does not include the ```instruction``` delimiter)
+1. the value of the ```part``` (this does not include any ```instruction``` delimiters)
 2. the ```data``` field name (or index) it is in
 3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
 4. the overall ASLAN structure
