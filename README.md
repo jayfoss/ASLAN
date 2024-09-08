@@ -250,3 +250,13 @@ Any ```data``` field can have more than one ```void``` delimiter but all ```void
 
 ### 14. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate ```void```s or ```void```s mixed with string content by simply ignoring the duplicates or additional string content.
+
+### 15. Special cases
+Empty strings in both the ```_default``` field and in any ```data``` field MUST always be treated as the string "" by parser implementations, never ```void```.
+
+The empty string `````` is equivalent to the JSON:
+```json
+{
+  "_default": ""
+}
+```
