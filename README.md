@@ -113,6 +113,8 @@ If the current `data` block scope has a string value, when the `data` block scop
 
 Parser implementations MUST provide a way for system developers to disable the emission of events with `END DATA` `instruction tag`s.
 
+Whitespace including new lines is always preserved - ASLAN supports multiline strings out of the box.
+
 #### 6.1 Example `data` usage
 1. The string `[asland_hi]Hello [asland_lo]World!` is equivalent to the JSON:
 
