@@ -146,6 +146,25 @@ Every ```data``` delimiter inside an ```object``` block will create a field in t
 ### 8. Rules for ```instruction```s
 ```instruction``` delimiters MUST adhere to the syntax ```[<PREFIX>i_<CONTENT>]``` (or ```[<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:...]``` when using args) where ```<CONTENT>``` is the name of ```instruction``` to run.
 
+```instruction```s operate on the ```part``` within which they are found. A string field with no explicit ```part``` delimiters is considered a single ```part```.
+
+When the parser encounters an ```instruction```, it MUST emit an event containing:
+1. the value of the ```part``` (this does not include the ```instruction``` delimiter)
+2. the ```data``` field name (or index) it is in
+3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
+4. the overall ASLAN structure
+5. all args in the instruction, in order
+6. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
+7. a ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
+
+On every subsequent change to the content of the ```part``` containing the ```instruction``` (remember that ```comment```s are ignored as they are not content), an additional event MUST be emitted as above, with the ```CONTENT``` ```instruction tag```.
+
+When the ```part``` ends, either due to another ```part``` delimiter or due to the end of the ```data``` field (both auto-closing and non auto-closing via an ```object``` or ```array``` close), an additional event MUST be emitted as above, with the ```END``` ```instruction tag```. This gives a system developer the option to only run an ```instruction``` at the end of the ```part``` or on every change.
+
+Every ```part``` may have multiple ```instruction```s and each ```instruction``` MUST be run in the order it appears.
+
+ASLAN parser implementations MUST provide API hooks that allow a system developer to listen to ```instruction``` events.
+
 ### 9. Rules for ```array```s
 ```array``` delimiters MUST adhere to the syntax ```[<PREFIX>a]```. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
 
