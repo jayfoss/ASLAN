@@ -199,5 +199,3 @@ This is an alternative, more LLM friendly, way of outputting content that may be
 Any ```data``` field can have more than one ```void``` delimiter but all ```void``` delimiters after the first will be ignored.
 
 ```void``` delimiters have a higher priority than all other string content in a ```field-scope```, meaning if a ```void``` occurs before or after other string content, the field will be treated as ```void```. Other delimiters in the field will be ignored, including ```escape```s and ```comment```s (although ```comment```s are ignored anyway). When a ```void``` occurs after other string content in a field, the field is treated as ```void``` and any content the parser has already stored is overridden. All content after a ```void``` is always ignored.
-
-Note: 
