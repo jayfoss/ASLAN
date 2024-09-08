@@ -224,6 +224,19 @@ Each closing `array` delimiter will shift the parser into the parent block scope
 
 Every `data` delimiter inside an `array` block will create a field in index in the `array` with the index being the `<CONTENT>` of the `data` delimiter if it exists and is a valid integer, or the next available index if not.
 
+#### 9.1 Example `array` usage
+1. The string `[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry[aslana]` is equivalent to the JSON:
+
+```json
+{
+  "fruits": [
+    "Apple",
+    "Banana",
+    "Cherry
+  ]
+}
+```
+
 It is RECOMMENDED that `data` inside an `array` all either use valid `<CONTENT>` or not, allowing for auto-incrementing indices starting from 0. However, parser implementations MUST be able to gracefully handle mixed missing/valid/invalid `<CONTENT>` in an `array` block scope, even if that means leaving holes in the `array`.
 
 ### 10. Rules for `comment`s
