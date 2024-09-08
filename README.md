@@ -62,7 +62,7 @@ The ```d``` suffix denotes ```data``` and can be thought of as similar to a fiel
 The ```o``` suffix denotes an ```object``` and can be thought of as similar to a JSON object. ```object``` delimiters are ```block-scope```.
 
 #### 5.3 The ```i``` suffix
-The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field. ```instruction``` delimiters are ```field-scope```.
+The ```i``` suffix denotes an ```instruction``` to the parser in a ```data``` context. These are used to modify the handling of content in the field. ```instruction``` delimiters are ```field-scope```, but affect ```part-rules```.
 
 #### 5.4 The ```a``` suffix
 The ```a``` suffix denotes an ```array``` and can be thought of as similar to a JSON array. ```array``` delimiters are ```block-scope```.
@@ -144,6 +144,7 @@ Each closing ```object``` delimiter will shift the parser into the parent block 
 Every ```data``` delimiter inside an ```object``` block will create a field in that ```object``` with the key name being the ```<CONTENT>``` of the ```data``` delimiter.
 
 ### 8. Rules for ```instruction```s
+```instruction``` delimiters MUST adhere to the syntax ```[<PREFIX>i_<CONTENT>]``` (or ```[<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:...]``` when using args) where ```<CONTENT>``` is the name of ```instruction``` to run.
 
 ### 9. Rules for ```array```s
 ```array``` delimiters MUST adhere to the syntax ```[<PREFIX>a]```. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
