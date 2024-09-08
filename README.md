@@ -10,18 +10,18 @@ Additionally, traditional structured formats are often strict and even good stre
 
 At worst, nothing renders, so you'll regularly end up having to show the user the last good state. When returning structured data to a UI and only rendering some fields, you can end up having several instances in a stream where the end user sees parts of the underlying data structure e.g. a JSON field that hasn't yet had a closing quote may be incorrectly inferred by a streaming parser to be part of the previous field's content.
 
-- JSON breaks on quotes & braces. Common parsers such as Python's ```json``` module are bad at handling control characters such as new lines. If using handlebars, template variables or f-Strings in your prompts, you're in for a bad day. Despite prompt engineering tricks, LLMs are still chatty and sometimes output content outside of your JSON which can be handled in the simple case, but not always.
+- JSON breaks on quotes & braces. Common parsers such as Python's `json` module are bad at handling control characters such as new lines. If using handlebars, template variables or f-Strings in your prompts, you're in for a bad day. Despite prompt engineering tricks, LLMs are still chatty and sometimes output content outside of your JSON which can be handled in the simple case, but not always.
 - LLMs can be a bit unreliable at generating XML, closing tags often get omitted. Text interspersed with XML isn't valid. Unclosed XML isn't valid: streaming parsers do hack around this as they do for JSON.
 - YAML and TOML are messy with too many special or control characters to escape
 - Markdown is tricky to structure and has a lot of special characters to escape
 
 ## Specification
-ASLAN files SHOULD have the extension ```.llm``` or ```.aslan```.
+ASLAN files SHOULD have the extension `.llm` or `.aslan`.
 
 ASLAN data consists of plaintext strings with a series of special tokens. To avoid confusion with LLM tokens, this spec uses the term 'ASLAN delimiter(s)', or just 'delimiter(s)' instead of 'token' from now on.
 
 ### 1. Prefix
-ASLAN delimiters start with a customizable prefix ```<PREFIX>```. All implementations MUST provide the default prefixes ```llm``` and ```aslan```.
+ASLAN delimiters start with a customizable prefix `<PREFIX>`. All implementations MUST provide the default prefixes `llm` and `aslan`.
 
 The delimiter prefix acts as a namespace to ensure external data also using ASLAN within a stream is ignored by the parser.
 
@@ -32,12 +32,12 @@ To minimize token usage in LLM calls, it is RECOMMENDED that prefixes be <= 7 ch
 ### 2. The root
 All ASLAN content is a child or subchild of the root. Strings with no delimiters are valid ASLAN and considered the only child of the root.
 
-```The quick brown fox jumps over the lazy dog``` is valid ASLAN.
+`The quick brown fox jumps over the lazy dog` is valid ASLAN.
 
 The root is a pseudo element that never appears in the output.
 
 #### 2.1 Default field
-Strings with no delimiters or ```field-scope``` delimiters only are inside an implicit ```data``` scope and will always be inserted into the ```_default``` field in the root, unless the ```_default``` field has been renamed.
+Strings with no delimiters or `field-scope` delimiters only are inside an implicit `data` scope and will always be inserted into the `_default` field in the root, unless the `_default` field has been renamed.
 
 Implementations MUST provide a way to rename the ```_default``` field. In other words, system developers MUST be able to instruct the parser to output content that would go in the ```_default``` field into a field of a different name.
 
@@ -302,3 +302,28 @@ The empty string is equivalent to the JSON:
   "_default": ""
 }
 ```
+
+### 16. Auto-closing behavior
+
+ASLAN implements automatic closing of dangling block scopes (`object`s and `array`s) at the end of a stream. This means that explicit closing delimiters (`[aslano]` for `objects` and `[aslana]` for `arrays`) are not necessary for the outermost unclosed structure at the end of a stream.
+
+#### 16.1 Example of auto-closing
+
+```aslan
+[asland_person][aslano]
+[asland_name]John Doe
+[asland_age]30
+[asland_hobbies][aslana]
+[asland]Reading
+[asland]Hiking
+[aslana]
+[asland_address][aslano]
+[asland_street]123 Main St
+[asland_city]Anytown
+```
+
+In this example, only the outermost `person` `object` doesn't need to be explicitly closed. The `hobbies` `array` must be closed explicitly to differentiate it from a potential object with numeric string keys. The `address` `object` is left unclosed as it's the last nested structure within `person`.
+
+#### 16.2 Best practices
+
+It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
