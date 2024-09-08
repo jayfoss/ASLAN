@@ -437,3 +437,5 @@ The aim is to be as permissive as possible because LLM reliability can be hard s
 
 ### What are some disadvantages?
 ASLAN can be larger than other formats such as JSON, especially for arrays. However, when dealing with complex or external content it is much more reliable and can often be smaller when your use case involves a few structured fields and a lot of content.
+
+Since ASLAN is so forgiving you are perfectly able to mix other data formats into an ASLAN stream e.g. encode arrays as JSON or CSV in an ASLAN field (though you will have to manually parse the string yourself).
