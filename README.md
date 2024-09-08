@@ -126,7 +126,7 @@ The duplicate behavior definition MUST be applied to the first duplicate ```data
 ```
 
 ### 7. Rules for ```object```s
-```object``` delimiters MUST adhere to the syntax [<PREFIX>o]. Almost all ASLAN fields are considered strings by default. The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
+```object``` delimiters MUST adhere to the syntax ```[<PREFIX>o]```. Almost all ASLAN fields are considered strings by default. The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
 
 By convention, we assume the named field for the root is the underlying variable containing the ASLAN structure, equivalent to this:
 ```typescript
@@ -140,6 +140,18 @@ Each closing ```object``` delimiter will shift the parser into the parent block 
 ### 8. Rules for ```instruction```s
 
 ### 9. Rules for ```array```s
-```array``` delimiters MUST adhere to the syntax [<PREFIX>a]. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
+```array``` delimiters MUST adhere to the syntax ```[<PREFIX>a]```. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
 
 Each closing ```array``` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope or in an ```object``` block, in which case all extraneous ```array``` delimiters will be ignored.
+
+### 10. Rules for ```comment```s
+```comment``` delimiters MUST adhere to the syntax ```[<PREFIX>c]```. ```comment``` delimiters indicate the start of a comment and can be placed anywhere. The comment ends when the parser encounters any ASLAN delimiter (with the current prefix - it is perfectly valid to use ASLAN delimiters with a different prefix in a comment and this will have no impact on the parsed output). 
+
+All ```comment``` are ignored by the parser and will not be output into the parsed data structure. Furthermore, for the purposes of other delimiter rules, ```comment```s can be thought of as having 0 length, that is they do not affect other rules.
+
+### 11. Rules for ```escape```s
+```escape``` delimiters MUST adhere to the syntax ```[<PREFIX>e_<CONTENT>]``` where ```<CONTENT>``` is any alphanumeric string. ```escape``` allows subsequent characters to be treated as regular strings, allowing content that would otherwise be considered ASLAN delimiters with the current prefix to be safely used as field content. This is particularly useful when passing ASLAN from external sources into an LLM where you might have it accidentally output content that would be treated as part of the data structure otherwise.
+
+The ```escape``` ends when the parser encounters another ```escape``` delimiter with the current prefix and identical ```<CONTENT>```.
+
+```<CONTENT>``` is RECOMMENDED to be sufficiently long and/or unique that it doesn't appear in the content the system developer wishes to escape.
