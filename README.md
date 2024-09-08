@@ -158,6 +158,37 @@ Each closing ```object``` delimiter will shift the parser into the parent block 
 
 Every ```data``` delimiter inside an ```object``` block will create a field in that ```object``` with the key name being the ```<CONTENT>``` of the ```data``` delimiter.
 
+#### 7.1 Example ```object``` usage
+1. The string ```[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz!``` and ```[asland_hi]Hello [asland_lo]World![asland_foo][aslanc]This is a comment[aslano][aslan_bar]Baz!``` are equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello ",
+  "lo": "World!",
+  "foo": {
+    "bar": "Baz!"
+  }
+}
+```
+
+2. The string ```[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz![aslano][asland_x][aslano][aslan_y]you are reading spec[aslan_z]and it continues here``` is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello ",
+  "lo": "World!",
+  "foo": {
+    "bar": "Baz!"
+  },
+  "x": {
+    "y": "you are reading spec",
+    "z": "and it continues here"
+  }
+}
+```
+
 ### 8. Rules for ```instruction```s
 ```instruction``` delimiters MUST adhere to the syntax ```[<PREFIX>i_<CONTENT>]``` (or ```[<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:...]``` when using args) where ```<CONTENT>``` is the name of ```instruction``` to run.
 
