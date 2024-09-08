@@ -1,4 +1,4 @@
-# ASLAN Sufficiently Lax AI Notation
+# ASLAN: ASLAN Sufficiently Lax AI Notation
 An LLM stream compatible structured data format that lets you safely output, parse and display rich content
 
 ASLAN gives you the power of your favorite data format, parsable with a simple state machine based parser, without worrying that content you send to your users will be completely unrenderable.
