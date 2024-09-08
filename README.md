@@ -110,6 +110,8 @@ If the current ```data``` block scope has a string value, when the ```data``` bl
 4. the overall ASLAN structure
 5. an ```instruction tag``` containing an enum value that is ```END DATA```
 
+Parser implementations MUST provide a way for system developers to disable the emission of events with ```END DATA``` ```instruction tag```s.
+
 #### 6.1 Example ```data``` usage
 1. The string ```[asland_hi]Hello [asland_lo]World!``` is equivalent to the JSON:
 
@@ -178,7 +180,7 @@ Every ```part``` may have multiple ```instruction```s and each ```instruction```
 
 ASLAN parser implementations MUST provide API hooks that allow a system developer to listen to ```instruction``` events.
 
-Parser implementations MUST provide a way for system developers to disable the emission of ```CONTENT``` ```instruction tag```s and SHOULD also provide a way to disable the ```END``` ```instruction tag```s.
+Parser implementations MUST provide a way for system developers to disable the emission of events with ```CONTENT``` and ```END``` ```instruction tag```s.
 
 ### 9. Rules for ```array```s
 ```array``` delimiters MUST adhere to the syntax ```[<PREFIX>a]```. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
@@ -212,3 +214,6 @@ This is an alternative, more LLM friendly, way of outputting content that may be
 Any ```data``` field can have more than one ```void``` delimiter but all ```void``` delimiters after the first will be ignored.
 
 ```void``` delimiters have a higher priority than all other string content in a ```field-scope```, meaning if a ```void``` occurs before or after other string content, the field will be treated as ```void```. Other delimiters in the field will be ignored, including ```escape```s and ```comment```s (although ```comment```s are ignored anyway). When a ```void``` occurs after other string content in a field, the field is treated as ```void``` and any content the parser has already stored is overridden. All content after a ```void``` is always ignored.
+
+#### 14. Error handling
+
