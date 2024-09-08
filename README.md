@@ -134,7 +134,7 @@ Parser implementations MUST provide a way for system developers to disable the e
 }
 ```
 
-2. The string ```[asland_hi]Hello [asland_lo]World! [asland_hi]Hello``` is equivalent to the JSON:
+3. The string ```[asland_hi]Hello [asland_lo]World![asland_hi]Hello``` is equivalent to the JSON:
 
 ```json
 {
@@ -248,11 +248,25 @@ Any ```data``` field can have more than one ```void``` delimiter but all ```void
 
 ```void``` delimiters have a higher priority than all other string content in a ```field-scope```, meaning if a ```void``` occurs before or after other string content, the field will be treated as ```void```. Other delimiters in the field will be ignored, including ```escape```s and ```comment```s (although ```comment```s are ignored anyway). When a ```void``` occurs after other string content in a field, the field is treated as ```void``` and any content the parser has already stored is overridden. All content after a ```void``` is always ignored.
 
+#### 6.1 Example ```void``` usage
+1. The string ```[asland_hi]Hello [asland_lo]World![asland_fi][aslanv]``` is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello",
+  "lo": "World!",
+  "fi": null
+}
+```
+
 ### 14. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate ```void```s or ```void```s mixed with string content by simply ignoring the duplicates or additional string content.
 
 ### 15. Special cases
 Empty strings in both the ```_default``` field and in any ```data``` field MUST always be treated as the string "" by parser implementations, never ```void```.
+
+If any field is declared in the root scope, then the ```_default``` field is ```void```.
 
 The empty string is equivalent to the JSON:
 ```json
