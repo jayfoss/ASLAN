@@ -217,6 +217,47 @@ ASLAN parser implementations MUST provide API hooks that allow a system develope
 
 Parser implementations MUST provide a way for system developers to disable the emission of events with `CONTENT` and `END` `instruction tag`s.
 
+#### 8.1 Example `instruction` usage
+1. The ASLAN string
+
+```aslan
+[asland_article][aslano]
+[asland_title]The Future of AI
+[asland_content]
+[aslanp][aslani_heading:1]Introduction
+[aslanp]Artificial Intelligence has come a long way in recent years.[aslani_highlight] From machine learning to neural networks, AI is revolutionizing various industries.[aslani_citation:1]
+[aslanp][aslani_heading:2]Key Areas of AI Development
+[aslanp][aslani_list]Natural Language Processing
+[aslanp][aslani_list]Computer Vision
+[aslanp][aslani_list]Robotics
+[aslanp][aslani_heading:2]Challenges and Ethical Considerations
+[aslanp]As AI continues to advance, we must address important ethical questions.[aslani_emphasis] Balancing progress with responsibility is crucial for the future of AI.[aslani_citation:2]
+[asland_author]Dr. Jane Smith
+[asland_date]2024-09-08
+```
+
+is equivalent to the JSON:
+
+```json
+{
+  "article": {
+    "title": "The Future of AI",
+    "content": [
+      "Introduction",
+      "Artificial Intelligence has come a long way in recent years. From machine learning to neural networks, AI is revolutionizing various industries.",
+      "Key Areas of AI Development",
+      "Natural Language Processing",
+      "Computer Vision",
+      "Robotics",
+      "Challenges and Ethical Considerations",
+      "As AI continues to advance, we must address important ethical questions. Balancing progress with responsibility is crucial for the future of AI."
+    ],
+    "author": "Dr. Jane Smith",
+    "date": "2024-09-08"
+  }
+}
+```
+
 ### 9. Rules for `array`s
 `array` delimiters MUST adhere to the syntax `[<PREFIX>a]`. `array` delimiters immediately after `data` delimiters will start a new nested array block scope on the corresponding field. `array` blocks are self-closing, but it is possible to close a block early with another `array` delimiter not immediately after a `data` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a `data` `comment` `array` set of delimiters and the `comment` will be ignored by the parser as usual.
 
