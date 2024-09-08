@@ -101,6 +101,7 @@ The duplicate behavior definition MUST be applied to the first duplicate ```data
 If the current ```data``` block scope has a string value, when the ```data``` block scope ends, either due to another ```data``` delimiter or due to the end of the ```data``` field (both auto-closing and non auto-closing via an ```object``` or ```array``` close), an event MUST be emitted as below:
 1. an array containing objects for every string ```part``` where each object contains:
   - the value of the string ```part``` (this does not include any ```instruction``` delimiters)
+  - the index of the ```part``` in the ```data```
   - an array of objects for every ```instruction``` in the ```part``` containing:
     - the ```<CONTENT>``` value of the ```instruction```
     - all args in the ```instruction```, in order, or an empty array if none exist
@@ -164,13 +165,14 @@ Every ```data``` delimiter inside an ```object``` block will create a field in t
 
 When the parser encounters an ```instruction```, it MUST emit an event containing:
 1. the value of the ```part``` (this does not include any ```instruction``` delimiters)
-2. the ```data``` field name (or index) it is in
-3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
-4. the overall ASLAN structure
-5. the ```instruction``` ```<CONTENT>``` value
-6. all args in the ```instruction```, in order, or an empty array if none exist
-7. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
-8. an ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
+2. the index of the ```part``` in the ```data``` field
+3. the ```data``` field name (or index) it is in
+4. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
+5. the overall ASLAN structure
+6. the ```instruction``` ```<CONTENT>``` value
+7. all args in the ```instruction```, in order, or an empty array if none exist
+8. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
+9. an ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
 
 On every subsequent change to the content of the ```part``` containing the ```instruction``` (remember that ```comment```s are ignored as they are not content), an additional event MUST be emitted as above, with the ```CONTENT``` ```instruction tag```.
 
