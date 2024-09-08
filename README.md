@@ -265,6 +265,27 @@ The `escape` ends when the parser encounters another `escape` delimiter with the
 
 `<CONTENT>` is RECOMMENDED to be sufficiently long and/or unique that it doesn't appear in the content the system developer wishes to escape.
 
+#### 10.1 Example `escape` usage
+1. The ASLAN string
+
+```aslan
+[asland_example_code]
+[aslane_CODE_BLOCK]
+function greet(name) {
+  console.log(`Hello, ${name}!`);
+  [asland_this_is_not_parsed]This is treated as a regular string
+}
+[aslane_CODE_BLOCK]
+```
+
+is equivalent to the JSON:
+
+```json
+{
+  "example_code": "function greet(name) {\n  console.log(`Hello, ${name}!`);\n  [asland_this_is_not_parsed]This is treated as a regular string\n}"
+}
+```
+
 ### 12. Rules for `part`s
 `part` delimiters MUST adhere to the syntax `[<PREFIX>p]`. `part`s split a string at the `part` and convert it into an implicit array of partial strings.
 
