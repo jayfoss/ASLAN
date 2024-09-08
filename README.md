@@ -258,7 +258,7 @@ This is an alternative, more LLM friendly, way of outputting content that may be
 }
 ```
 
-2. The string `[asland_styled_text][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[aslanp][aslani_italic][aslani_underline]This is italic and underlined text. [aslanp][aslani_size:large][aslani_font:monospace]This is large monospace text.` is equivalent to the JSON:
+2. The string `[asland_styled_text][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[aslanp][aslani_italic][aslani_underline]This is italic and underlined text.[aslanp][aslani_size:large][aslani_font:monospace]This is large monospace text.` is equivalent to the JSON:
 ```json
 {
   "styled_text": [
