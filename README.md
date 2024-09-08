@@ -179,7 +179,7 @@ It is RECOMMENDED that ```data``` inside an ```array``` all either use valid ```
 ### 10. Rules for ```comment```s
 ```comment``` delimiters MUST adhere to the syntax ```[<PREFIX>c]```. ```comment``` delimiters indicate the start of a comment and can be placed anywhere. The comment ends when the parser encounters any ASLAN delimiter (with the current prefix - it is perfectly valid to use ASLAN delimiters with a different prefix in a comment and this will have no impact on the parsed output). 
 
-All ```comment``` are ignored by the parser and will not be output into the parsed data structure. Furthermore, for the purposes of other delimiter rules, ```comment```s can be thought of as having 0 length, that is they do not affect other rules.
+All ```comment```s are ignored by the parser and will not be output into the parsed data structure. Furthermore, for the purposes of other delimiter rules, ```comment```s can be thought of as having 0 length, that is they do not affect other rules.
 
 ### 11. Rules for ```escape```s
 ```escape``` delimiters MUST adhere to the syntax ```[<PREFIX>e_<CONTENT>]``` where ```<CONTENT>``` is any alphanumeric string. ```escape``` allows subsequent characters to be treated as regular strings, allowing content that would otherwise be considered ASLAN delimiters with the current prefix to be safely used as field content. This is particularly useful when passing ASLAN from external sources into an LLM where you might have it accidentally output content that would be treated as part of the data structure otherwise.
