@@ -225,7 +225,7 @@ Each closing `array` delimiter will shift the parser into the parent block scope
 Every `data` delimiter inside an `array` block will create a field in index in the `array` with the index being the `<CONTENT>` of the `data` delimiter if it exists and is a valid integer, or the next available index if not.
 
 #### 9.1 Example `array` usage
-1. The string `[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry[aslana]` is equivalent to the JSON:
+1. The string `[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry` is equivalent to the JSON:
 
 ```json
 {
@@ -233,12 +233,12 @@ Every `data` delimiter inside an `array` block will create a field in index in t
   "fruits": [
     "Apple",
     "Banana",
-    "Cherry
+    "Cherry"
   ]
 }
 ```
 
-2. The string `[asland_custom_array][aslana][asland_2]Third item[asland_0]First item[asland_1]Second item[aslana]` is equivalent to the JSON:
+2. The string `[asland_custom_array][aslana][asland_2]Third item[asland_0]First item[asland_1]Second item` is equivalent to the JSON:
 
 ```json
 {
@@ -354,7 +354,7 @@ The empty string is equivalent to the JSON:
 
 ### 16. Auto-closing behavior
 
-ASLAN implements automatic closing of dangling block scopes (`object`s and `array`s) at the end of a stream. This means that explicit closing delimiters (`[aslano]` for `objects` and `[aslana]` for `arrays`) are not necessary for the outermost unclosed structure at the end of a stream.
+ASLAN implements automatic closing of dangling block scopes (`object`s and `array`s) at the end of a stream. This means that explicit closing delimiters (`[aslano]` for `objects` and `[aslana]` for `arrays`) are not necessary for the outermost unclosed structure at the end of a stream. Adding closing delimiters on dangling scopes MUST be permitted but strictly optional.
 
 #### 16.1 Example of auto-closing
 
