@@ -126,7 +126,7 @@ The duplicate behavior definition MUST be applied to the first duplicate ```data
 ```
 
 ### 7. Rules for ```object```s
-Almost all ASLAN fields are considered strings by default. The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
+```object``` delimiters MUST adhere to the syntax [<PREFIX>o]. Almost all ASLAN fields are considered strings by default. The root is considered an implicit ```object```. If we wrote out explict delimiters for the root it would be equivalent to ```[<PREFIX>d_root][<PREFIX>o]``` which would be the JSON object ```{}```.
 
 By convention, we assume the named field for the root is the underlying variable containing the ASLAN structure, equivalent to this:
 ```typescript
@@ -140,6 +140,6 @@ Each closing ```object``` delimiter will shift the parser into the parent block 
 ### 8. Rules for ```instruction```s
 
 ### 9. Rules for ```array```s
-```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
+```array``` delimiters MUST adhere to the syntax [<PREFIX>a]. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
 
 Each closing ```array``` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope or in an ```object``` block, in which case all extraneous ```array``` delimiters will be ignored.
