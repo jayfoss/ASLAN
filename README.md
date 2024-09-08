@@ -39,12 +39,12 @@ The root is a pseudo element that never appears in the output.
 #### 2.1 Default field
 Strings with no delimiters or `field-scope` delimiters only are inside an implicit `data` scope and will always be inserted into the `_default` field in the root, unless the `_default` field has been renamed.
 
-Implementations MUST provide a way to rename the `_default` field. In other words, system developers MUST be able to instruct the parser to output content that would go in the `_default` field into a field of a different name.
+Implementations MUST provide a way to rename the `_default` field. In other words, application developers MUST be able to instruct the parser to output content that would go in the `_default` field into a field of a different name.
 
 ### 3. Delimiter format
 Delimiters MUST have the format `[<PREFIX><SUFFIX>_<CONTENT>]` or `[<PREFIX><SUFFIX>]` depending on the suffix. Delimiters may have optional arguments of the form `[<PREFIX><SUFFIX>_<CONTENT>:<ARG0>:<ARG1>]`, with or without content depending on the suffix.
 
-Optional arguments are designed to allow a system developer to extend or modify the behavior of the parser at runtime.
+Optional arguments are designed to allow an application developer to extend or modify the behavior of the parser at runtime.
 
 ### 4. Delimiter content
 Delimiter content in `<CONTENT>` MUST only consist of alphanumeric characters and underscores, and may not start or end with an underscore.
@@ -111,7 +111,7 @@ If the current `data` block scope has a string value, when the `data` block scop
 4. the overall ASLAN structure
 5. an `instruction tag` containing an enum value that is `END DATA`
 
-Parser implementations MUST provide a way for system developers to disable the emission of events with `END DATA` `instruction tag`s.
+Parser implementations MUST provide a way for application developers to disable the emission of events with `END DATA` `instruction tag`s.
 
 Whitespace including new lines is always preserved - ASLAN supports multiline strings out of the box.
 
@@ -211,13 +211,13 @@ When the parser encounters an `instruction`, it MUST emit an event containing:
 
 On every subsequent change to the content of the `part` containing the `instruction` (remember that `comment`s are ignored as they are not content), an additional event MUST be emitted as above, with the `CONTENT` `instruction tag`.
 
-When the `part` ends, either due to another `part` delimiter or due to the end of the `data` field (both auto-closing and non auto-closing via an `object` or `array` close), an additional event MUST be emitted as above, with the `END` `instruction tag`. This gives a system developer the option to only run an `instruction` at the end of the `part` or on every change.
+When the `part` ends, either due to another `part` delimiter or due to the end of the `data` field (both auto-closing and non auto-closing via an `object` or `array` close), an additional event MUST be emitted as above, with the `END` `instruction tag`. This gives an application developer the option to only run an `instruction` at the end of the `part` or on every change.
 
 Every `part` may have multiple `instruction`s and each `instruction` MUST be run in the order it appears.
 
-ASLAN parser implementations MUST provide API hooks that allow a system developer to listen to `instruction` events.
+ASLAN parser implementations MUST provide API hooks that allow an application developer to listen to `instruction` events.
 
-Parser implementations MUST provide a way for system developers to disable the emission of events with `CONTENT` and `END` `instruction tag`s.
+Parser implementations MUST provide a way for application developers to disable the emission of events with `CONTENT` and `END` `instruction tag`s.
 
 `instruction`s apply to the entire `part` in which they appear.
 
@@ -308,7 +308,7 @@ All `comment`s are ignored by the parser and will not be output into the parsed 
 
 The `escape` ends when the parser encounters another `escape` delimiter with the current prefix and identical `<CONTENT>`.
 
-`<CONTENT>` is RECOMMENDED to be sufficiently long and/or unique that it doesn't appear in the content the system developer wishes to escape.
+`<CONTENT>` is RECOMMENDED to be sufficiently long and/or unique that it doesn't appear in the content the application developer wishes to escape.
 
 #### 10.1 Example `escape` usage
 1. The ASLAN string
@@ -421,9 +421,19 @@ In this example, only the outermost `person` `object` doesn't need to be explici
 #### 16.2 Best practices
 
 - It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
-- Since `instruction`s apply to whole `part`s, it is RECOMMENDED for system developers to use them in conjunction with `part` delimiters when styling specific substrings, or using them to apply an operation such as adding a citation after a piece of text. However, `instruction` events do contain indices so a system developer can manually use multiple styles or operations via `instruction`s over a `part` if they need finer control and don't want the benefits of the ASLAN parser handling this.
+- Since `instruction`s apply to whole `part`s, it is RECOMMENDED for application developers to use them in conjunction with `part` delimiters when styling specific substrings, or using them to apply an operation such as adding a citation after a piece of text. However, `instruction` events do contain indices so an application developer can manually use multiple styles or operations via `instruction`s over a `part` if they need finer control and don't want the benefits of the ASLAN parser handling this.
 
 ### 17. Implementation specifics
 - It is RECOMMENDED to parse ASLAN strings one character at a time
 - Parsers MUST never look ahead as this will break the assumption of streaming compatibility
-- Parsers MUST provide the option to buffer delimiters (i.e. when a `[` character arrives, wait for more characters until either it is recognized as an ASLAN delimiter, or recognized as part of regular string content) to ensure that system developers can directly display ASLAN to an end user without partially streamed delimiters being rendered. This is especially true for `instruction` & `part` delimiters which regularly appear in string content. It is strongly RECOMMENDED that buffering delimiters is the default option for parsers.
+- Parsers MUST provide the option to buffer delimiters (i.e. when a `[` character arrives, wait for more characters until either it is recognized as an ASLAN delimiter, or recognized as part of regular string content) to ensure that application developers can directly display ASLAN to an end user without partially streamed delimiters being rendered. This is especially true for `instruction` & `part` delimiters which regularly appear in string content. It is strongly RECOMMENDED that buffering delimiters is the default option for parsers.
+
+## Discussion
+### Why doesn't ASLAN support `numbers` and `booleans`?
+The short answer is it's probably not that useful. If you need a number or a boolean for a specific field, you as an application developer can parse the field with your favorite transform library.
+
+### Why don't you throw errors?
+The aim is to be as permissive as possible because LLM reliability can be hard so minor output hiccups are to be expected. We'd rather you get some data than no data at all.
+
+### What are some disadvantages?
+ASLAN can be larger than other formats such as JSON, especially for arrays. However, when dealing with complex or external content it is much more reliable and can often be smaller when your use case involves a few structured fields and a lot of content.
