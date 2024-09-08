@@ -238,6 +238,19 @@ Every `data` delimiter inside an `array` block will create a field in index in t
 }
 ```
 
+2. The string `[asland_custom_array][aslana][asland_2]Third item[asland_0]First item[asland_1]Second item[aslana]` is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "custom_array":[
+    "First item",
+    "Second item",
+    "Third item"
+  ]
+}
+```
+
 It is RECOMMENDED that `data` inside an `array` all either use valid `<CONTENT>` or not, allowing for auto-incrementing indices starting from 0. However, parser implementations MUST be able to gracefully handle mixed missing/valid/invalid `<CONTENT>` in an `array` block scope, even if that means leaving holes in the `array`.
 
 ### 10. Rules for `comment`s
