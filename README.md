@@ -254,7 +254,7 @@ ASLAN is designed specifically for IO in non-deterministic LLM based systems. As
 ### 15. Special cases
 Empty strings in both the ```_default``` field and in any ```data``` field MUST always be treated as the string "" by parser implementations, never ```void```.
 
-The empty string ``` ``` is equivalent to the JSON:
+The empty string is equivalent to the JSON:
 ```json
 {
   "_default": ""
