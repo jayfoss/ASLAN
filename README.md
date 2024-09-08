@@ -103,7 +103,7 @@ If the current ```data``` block scope has a string value, when the ```data``` bl
   - the value of the string ```part``` (this does not include any ```instruction``` delimiters)
   - an array of objects for every ```instruction``` in the ```part``` containing:
     - the ```<CONTENT>``` value of the ```instruction```
-    - all args in the instruction, in order
+    - all args in the ```instruction```, in order, or an empty array if none exist
     - the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
 2. the ```data``` field name (or index) it is in
 3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
@@ -166,7 +166,7 @@ When the parser encounters an ```instruction```, it MUST emit an event containin
 3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
 4. the overall ASLAN structure
 5. the ```instruction``` ```<CONTENT>``` value
-6. all args in the instruction, in order, on an empty array if none exist
+6. all args in the ```instruction```, in order, or an empty array if none exist
 7. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
 8. an ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
 
