@@ -165,3 +165,8 @@ All ```comment``` are ignored by the parser and will not be output into the pars
 The ```escape``` ends when the parser encounters another ```escape``` delimiter with the current prefix and identical ```<CONTENT>```.
 
 ```<CONTENT>``` is RECOMMENDED to be sufficiently long and/or unique that it doesn't appear in the content the system developer wishes to escape.
+
+### 12. Rules for ```part```s
+```part``` delimiters MUST adhere to the syntax ```[<PREFIX>p]```. ```part```s split a string at the ```part``` and convert it into an implicit array of partial strings.
+
+This is an alternative, more LLM friendly, way of outputting content that may be individually styled by the end system compared to the ```array``` delimiter. However, unlike the ```array``` delimiter, ```part``` doesn't allow custom indices.
