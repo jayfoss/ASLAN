@@ -433,7 +433,7 @@ In this example, only the outermost `person` `object` doesn't need to be explici
 The short answer is it's probably not that useful. If you need a number or a boolean for a specific field, you as an application developer can parse the field with your favorite transform library. If someone makes a compelling use case argument, I'll add it.
 
 ### Why don't you throw errors?
-The aim is to be as permissive as possible because LLM reliability can be hard so minor output hiccups are to be expected. We'd rather you get some data than no data at all.
+The aim is to be as permissive as possible because LLM reliability can be hard so minor output hiccups are to be expected. We'd all rather get some correct data than no data at all.
 
 ### What are some disadvantages?
 ASLAN can be larger than other formats such as JSON, especially for arrays. However, when dealing with complex or external content it is much more reliable and can often be smaller when your use case involves a few structured fields and a lot of content.
