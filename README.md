@@ -376,3 +376,8 @@ In this example, only the outermost `person` `object` doesn't need to be explici
 #### 16.2 Best practices
 
 It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
+
+### 17. Implementation specifics
+- It is RECOMMENDED to parse ASLAN strings one character at a time
+- Parsers MUST never look ahead as this will break the assumption of streaming compatibility
+- Parsers MUST provide the option to buffer delimiters (i.e. when a `[` character arrives, wait for more characters until either it is recognized as an ASLAN delimiter, or recognized as part of regular string content) to ensure that system developers can directly display ASLAN to an end user without partially streamed delimiters being rendered. This is especially true for `instruction` & `part` delimiters which regularly appear in string content. It is strongly RECOMMENDED that buffering delimiters is the default option for parsers.
