@@ -100,11 +100,11 @@ The duplicate behavior definition MUST be applied to the first duplicate ```data
 
 If the current ```data``` block scope has a string value, when the ```data``` block scope ends, either due to another ```data``` delimiter or due to the end of the ```data``` field (both auto-closing and non auto-closing via an ```object``` or ```array``` close), an event MUST be emitted as below:
 1. an array containing objects for every string ```part``` where each object contains:
-  a. the value of the string ```part``` (this does not include any ```instruction``` delimiters)
-  b. an array of objects for every ```instruction``` in the ```part``` containing:
-    i. the ```<CONTENT>``` value of the ```instruction```
-    ii. all args in the instruction, in order
-    iii. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
+  - the value of the string ```part``` (this does not include any ```instruction``` delimiters)
+  - an array of objects for every ```instruction``` in the ```part``` containing:
+    - the ```<CONTENT>``` value of the ```instruction```
+    - all args in the instruction, in order
+    - the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
 2. the ```data``` field name (or index) it is in
 3. a path to the field within the overall ASLAN data structure e.g. ```["address", "line1"]```
 4. the overall ASLAN structure
