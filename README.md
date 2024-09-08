@@ -219,6 +219,8 @@ ASLAN parser implementations MUST provide API hooks that allow a system develope
 
 Parser implementations MUST provide a way for system developers to disable the emission of events with `CONTENT` and `END` `instruction tag`s.
 
+`instruction`s apply to the entire `part` in which they appear.
+
 #### 8.1 Example `instruction` usage
 1. The ASLAN string
 
@@ -418,7 +420,8 @@ In this example, only the outermost `person` `object` doesn't need to be explici
 
 #### 16.2 Best practices
 
-It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
+- It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
+- Since `instruction`s apply to whole `part`s, it is RECOMMENDED for system developers to use them in conjunction with `part` delimiters when styling specific substrings, or using them to apply an operation such as adding a citation after a piece of text. However, `instruction` events do contain indices so a system developer can manually use multiple styles or operations via `instruction`s over a `part` if they need finer control and don't want the benefits of the ASLAN parser handling this.
 
 ### 17. Implementation specifics
 - It is RECOMMENDED to parse ASLAN strings one character at a time
