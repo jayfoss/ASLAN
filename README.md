@@ -155,7 +155,7 @@ When the parser encounters an ```instruction```, it MUST emit an event containin
 4. the overall ASLAN structure
 5. all args in the instruction, in order
 6. the index of the ```instruction``` delimiter within the ```part``` (note that for the purposes of this, ```instruction``` delimiters are treated as having length 1, that is ```ABC[aslani_ins]DEF[aslani_ins2]G``` would put 'D' at index 4 and 'G' at index 8)
-7. a ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
+7. an ```instruction tag``` containing an enum value that is either ```CONTENT``` or ```END``` (this is ```CONTENT```) when the instruction is first encountered
 
 On every subsequent change to the content of the ```part``` containing the ```instruction``` (remember that ```comment```s are ignored as they are not content), an additional event MUST be emitted as above, with the ```CONTENT``` ```instruction tag```.
 
