@@ -37,7 +37,7 @@ All ASLAN content is a child or subchild of the root. Strings with no delimiters
 The root is a pseudo element that never appears in the output.
 
 #### 2.1 Default field
-Strings with no delimiters or ```field-scope``` delimiters only will always be inserted into the ```_default``` field in the root, unless the ```_default``` field has been renamed.
+Strings with no delimiters or ```field-scope``` delimiters only are inside an implicit ```data``` scope and will always be inserted into the ```_default``` field in the root, unless the ```_default``` field has been renamed.
 
 Implementations MUST provide a way to rename the ```_default``` field. In other words, system developers MUST be able to instruct the parser to output content that would go in the ```_default``` field into a field of a different name.
 
