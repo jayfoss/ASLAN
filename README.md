@@ -53,7 +53,7 @@ In most cases, the content is the name of a data field or instruction but there 
 
 ### 5. Delimiter suffixes
 The ```<SUFFIX>``` in a delimiter MUST be a single character from the following list ```d```, ```o```, ```i```, ```a```, ```c```, ```e```, ```p```, ```v```.
-All other alphanumeric characters both upper and lower case are reserved for future use.
+All other alphanumeric characters both upper and lower case are reserved for future use. Parsers MUST ignore delimiters with unimplemented suffixes and not add them to any generated data structure.
 
 #### 5.1 The ```d``` suffix
 The ```d``` suffix denotes ```data``` and can be thought of as similar to a field in JSON. ```data``` delimiters are ```block-scope```.
@@ -80,7 +80,11 @@ The ```p``` suffix denotes a ```part```. This creates a split point in the data 
 The ```v``` suffix denotes a ```void```. This is equivalent to ```null``` in most languages. ```void``` delimiters are ```field-scope```.
 
 ### 6. Rules for ```data```
-The ```data``` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax ```[<PREFIX>d_<CONTENT>]``` (or ```[<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:...]``` when using args) where ```<CONTENT>``` will become the name of the field. Each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are appended to the added field until any of ```data```, ```object```, ```comment``` or EOF are reached.
+The ```data``` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax ```[<PREFIX>d]```, ```[<PREFIX>d_<CONTENT>]``` (or ```[<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:...]``` when using args) where ```<CONTENT>``` will become the name of the field.
+
+In an ```object``` scope, the ```<CONTENT>``` is required and each time a ```data``` delimiter is reached, a new field is added to the current ```object``` scope. Subsequent characters are appended to the added field until any of ```data```, ```object```, ```comment``` or EOF are reached.
+
+In an ```array``` scope, the ```<CONTENT>``` is optional and each time a ```data``` delimiter is reached, a new value at index ```<CONTENT>``` (or the next available index if not specified) is added to the current ```array``` scope. Subsequent characters are appended to the added field until any of ```data```, ```array```, ```comment``` or EOF are reached.
 
 The next ```data``` field encountered will be added to the current ```object``` scope as before.
 
@@ -137,12 +141,18 @@ const root = {};
 
 Each closing ```object``` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope or in an ```array``` block, in which case all extraneous ```object``` delimiters will be ignored.
 
+Every ```data``` delimiter inside an ```object``` block will create a field in that ```object``` with the key name being the ```<CONTENT>``` of the ```data``` delimiter.
+
 ### 8. Rules for ```instruction```s
 
 ### 9. Rules for ```array```s
 ```array``` delimiters MUST adhere to the syntax ```[<PREFIX>a]```. ```array``` delimiters immediately after ```data``` delimiters will start a new nested array block scope on the corresponding field. ```array``` blocks are self-closing, but it is possible to close a block early with another ```array``` delimiter not immediately after a ```data``` delimiter to get the desired nesting behavior. Comments count as length zero and do not affect the delimiter adjacency rules: it is valid to have a ```data``` ```comment``` ```array``` set of delimiters and the ```comment``` will be ignored by the parser as usual.
 
 Each closing ```array``` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope or in an ```object``` block, in which case all extraneous ```array``` delimiters will be ignored.
+
+Every ```data``` delimiter inside an ```array``` block will create a field in index in the ```array``` with the index being the ```<CONTENT>``` of the ```data``` delimiter if it exists and is a valid integer, or the next available index if not.
+
+It is RECOMMENDED that ```data``` inside an ```array``` all either use valid ```<CONTENT>``` or not, allowing for auto-incrementing indices starting from 0. However, parser implementations MUST be able to gracefully handle mixed missing/valid/invalid ```<CONTENT>``` in an ```array``` block scope, even if that means leaving holes in the ```array```.
 
 ### 10. Rules for ```comment```s
 ```comment``` delimiters MUST adhere to the syntax ```[<PREFIX>c]```. ```comment``` delimiters indicate the start of a comment and can be placed anywhere. The comment ends when the parser encounters any ASLAN delimiter (with the current prefix - it is perfectly valid to use ASLAN delimiters with a different prefix in a comment and this will have no impact on the parsed output). 
