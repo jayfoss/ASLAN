@@ -430,7 +430,7 @@ In this example, only the outermost `person` `object` doesn't need to be explici
 
 ## Discussion
 ### Why doesn't ASLAN support `numbers` and `booleans`?
-The short answer is it's probably not that useful. If you need a number or a boolean for a specific field, you as an application developer can parse the field with your favorite transform library.
+The short answer is it's probably not that useful. If you need a number or a boolean for a specific field, you as an application developer can parse the field with your favorite transform library. If someone makes a compelling use case argument, I'll add it.
 
 ### Why don't you throw errors?
 The aim is to be as permissive as possible because LLM reliability can be hard so minor output hiccups are to be expected. We'd rather you get some data than no data at all.
