@@ -194,6 +194,8 @@ Every ```data``` delimiter inside an ```object``` block will create a field in t
 
 ```instruction```s operate on the ```part``` within which they are found. A string field with no explicit ```part``` delimiters is considered a single ```part```.
 
+```instruction```s do not affect the structure of the data or split string content. They are emitted as events for the parser to handle separately from the data structure.
+
 When the parser encounters an ```instruction```, it MUST emit an event containing:
 1. the value of the ```part``` (this does not include any ```instruction``` delimiters)
 2. the index of the ```part``` in the ```data``` field
@@ -241,6 +243,8 @@ The ```escape``` ends when the parser encounters another ```escape``` delimiter 
 
 This is an alternative, more LLM friendly, way of outputting content that may be individually styled by the end system compared to the ```array``` delimiter. However, unlike the ```array``` delimiter, ```part``` doesn't allow custom indices. For the purposes of ```instruction```s, ```part```s create their own internal ```part-rules```.
 
+```part``` split a string field into an array of strings. Any ```instruction```s within ```part```s do not appear in the final data structure but are emitted as separate events.
+
 #### 12.1 Example ```part``` usage
 1. The string ```[asland_formatted_text][aslanp]This is the first part.[aslanp]This is the second part.[aslanp]This is the third part.``` is equivalent to the JSON:
 ```json
@@ -250,6 +254,17 @@ This is an alternative, more LLM friendly, way of outputting content that may be
     "This is the first part.",
     "This is the second part.",
     "This is the third part."
+  ]
+}
+```
+
+2. The string ```[asland_styled_text][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[aslanp][aslani_italic][aslani_underline]This is italic and underlined text. [aslanp][aslani_size:large][aslani_font:monospace]This is large monospace text.``` is equivalent to the JSON:
+```json
+{
+  "styled_text": [
+    "This is bold and red text.",
+    "This is italic and underlined text.",
+    "This is large monospace text."
   ]
 }
 ```
