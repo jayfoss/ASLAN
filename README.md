@@ -241,19 +241,19 @@ is equivalent to the JSON:
 ```json
 {
   "article": {
-    "title": "The Future of AI",
+    "title": "The Future of AI\n",
     "content": [
-      "Introduction",
-      "Artificial Intelligence has come a long way in recent years. From machine learning to neural networks, AI is revolutionizing various industries.",
-      "Key Areas of AI Development",
-      "Natural Language Processing",
-      "Computer Vision",
-      "Robotics",
-      "Challenges and Ethical Considerations",
-      "As AI continues to advance, we must address important ethical questions. Balancing progress with responsibility is crucial for the future of AI."
+      "Introduction\n",
+      "Artificial Intelligence has come a long way in recent years. From machine learning to neural networks, AI is revolutionizing various industries.\n",
+      "Key Areas of AI Development\n",
+      "Natural Language Processing\n",
+      "Computer Vision\n",
+      "Robotics\n",
+      "Challenges and Ethical Considerations\n",
+      "As AI continues to advance, we must address important ethical questions. Balancing progress with responsibility is crucial for the future of AI.\n"
     ],
-    "author": "Dr. Jane Smith",
-    "date": "2024-09-08"
+    "author": "Dr. Jane Smith\n",
+    "date": "2024-09-08\n"
   }
 }
 ```
