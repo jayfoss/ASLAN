@@ -169,4 +169,13 @@ The ```escape``` ends when the parser encounters another ```escape``` delimiter 
 ### 12. Rules for ```part```s
 ```part``` delimiters MUST adhere to the syntax ```[<PREFIX>p]```. ```part```s split a string at the ```part``` and convert it into an implicit array of partial strings.
 
-This is an alternative, more LLM friendly, way of outputting content that may be individually styled by the end system compared to the ```array``` delimiter. However, unlike the ```array``` delimiter, ```part``` doesn't allow custom indices.
+This is an alternative, more LLM friendly, way of outputting content that may be individually styled by the end system compared to the ```array``` delimiter. However, unlike the ```array``` delimiter, ```part``` doesn't allow custom indices. For the purposes of ```instruction```s, ```part```s create their own internal ```part-rules```.
+
+### 13. Rules for ```void```s
+```void``` delimiters MUST adhere to the syntax ```[<PREFIX>v]``` which is equivalent to a ```null``` in JSON. Any ```data``` field can have a ```void``` delimiter to set its value to ```null```.
+
+Any ```data``` field can have more than one ```void``` delimiter but all ```void``` delimiters after the first will be ignored.
+
+```void``` delimiters have a higher priority than all other string content in a ```field-scope```, meaning if a ```void``` occurs before or after other string content, the field will be treated as ```void```. Other delimiters in the field will be ignored, including ```escape```s and ```comment```s (although ```comment```s are ignored anyway). When a ```void``` occurs after other string content in a field, the field is treated as ```void``` and any content the parser has already stored is overridden. All content after a ```void``` is always ignored.
+
+Note: 
