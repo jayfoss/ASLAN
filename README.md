@@ -15,6 +15,8 @@ At worst, nothing renders, so you'll regularly end up having to show the user th
 - YAML and TOML are messy with too many special or control characters to escape
 - Markdown is tricky to structure and has a lot of special characters to escape
 
+***This is a working spec document at the moment and is subject to change based on incoming feedback***
+
 ## Specification
 ASLAN files SHOULD have the extension `.llm` or `.aslan`.
 
