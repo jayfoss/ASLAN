@@ -81,6 +81,12 @@ The `p` suffix denotes a `part`. This creates a split point in the data content,
 #### 5.8 The `v` suffix
 The `v` suffix denotes a `void`. This is equivalent to `null` in most languages. `void` delimiters are `field-scope`.
 
+#### 5.9 The `g` suffix
+The `g` suffix denotes a `go` and is optionally used to denote the start of an ASLAN string for multi-ASLAN support, or increased content safety.
+
+#### 5.10 The `s` suffix
+The `s` suffix denotes a `stop` and is optionally used to denote the end of an ASLAN string for multi-ASLAN support, or increased content safety.
+
 ### 6. Rules for `data`
 The `data` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax `[<PREFIX>d]`, `[<PREFIX>d_<CONTENT>]` (or `[<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:...]` when using args) where `<CONTENT>` will become the name of the field.
 
