@@ -445,6 +445,11 @@ ASLAN parsers MUST implement the `strictStart` flag and have it default to `fals
 Note that an ASLAN parser, whether it has encountered multi-ASLAN or single-ASLAN MUST always output the final result of a parsed stream as an array of 1 or more ASLAN objects. For brevity in this spec, we only show the wrapper array when there are multiple elements.
 
 ### 15. Rules for `stop`s
+`stop` delimiters MUST adhere to the syntax `[<PREFIX>s]`. If the parser has the `strictEnd` flag enabled, it must stop start trying to parse content as ASLAN after the `stop` delimiter.
+
+If the `strictEnd` flag is disabled, all content in the stream will be parsed as ASLAN and any `stop` delimiter will be ignored.
+
+The `stop` delimiter is strictly optional and is designed purely as a safe way to avoid LLM epilogue being included in the result. It is unnecessary to use the `stop` delimiter in conjunction with the `go` delimiter if you are certain there will be no epilogue since the `go` delimiter starts a new ASLAN object by itself.
 
 ### 16. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate `void`s or `void`s mixed with string content by simply ignoring the duplicates or additional string content.
