@@ -54,7 +54,7 @@ Delimiter content in `<CONTENT>` MUST only consist of alphanumeric characters an
 In most cases, the content is the name of a data field or instruction but there are some special cases which will be discussed later in this spec.
 
 ### 5. Delimiter suffixes
-The `<SUFFIX>` in a delimiter MUST be a single character from the following list `d`, `o`, `i`, `a`, `c`, `e`, `p`, `v`.
+The `<SUFFIX>` in a delimiter MUST be a single character from the following list `d`, `o`, `i`, `a`, `c`, `e`, `p`, `v`, `g`, `s`.
 All other alphanumeric characters both upper and lower case are reserved for future use. Parsers MUST ignore delimiters with unimplemented suffixes and not add them to any generated data structure.
 
 #### 5.1 The `d` suffix
