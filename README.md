@@ -82,10 +82,10 @@ The `p` suffix denotes a `part`. This creates a split point in the data content,
 The `v` suffix denotes a `void`. This is equivalent to `null` in most languages. `void` delimiters are `field-scope`.
 
 #### 5.9 The `g` suffix
-The `g` suffix denotes a `go` and is optionally used to denote the start of an ASLAN string for multi-ASLAN support, or increased content safety.
+The `g` suffix denotes a `go` and is optionally used to mark the start of an ASLAN string for multi-ASLAN support, or increased content safety.
 
 #### 5.10 The `s` suffix
-The `s` suffix denotes a `stop` and is optionally used to denote the end of an ASLAN string for multi-ASLAN support, or increased content safety.
+The `s` suffix denotes a `stop` and is optionally used to mark the end of an ASLAN string for multi-ASLAN support, or increased content safety.
 
 ### 6. Rules for `data`
 The `data` delimiter is the most common way of creating structured data in ASLAN. It MUST adhere to the syntax `[<PREFIX>d]`, `[<PREFIX>d_<CONTENT>]` (or `[<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:...]` when using args) where `<CONTENT>` will become the name of the field.
@@ -390,10 +390,14 @@ Any `data` field can have more than one `void` delimiter but all `void` delimite
 }
 ```
 
-### 14. Error handling
+### 14. Rules for `go`s
+
+### 15. Rules for `stops`s
+
+### 16. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate `void`s or `void`s mixed with string content by simply ignoring the duplicates or additional string content.
 
-### 15. Special cases
+### 17. Special cases
 Empty strings in both the `_default` field and in any `data` field MUST always be treated as the string "" by parser implementations, never `void`.
 
 If any field is declared in the root scope, then the `_default` field is `void`.
@@ -405,11 +409,11 @@ The empty string is equivalent to the JSON:
 }
 ```
 
-### 16. Auto-closing behavior
+### 18. Auto-closing behavior
 
 ASLAN implements automatic closing of dangling block scopes (`object`s and `array`s) at the end of a stream. This means that explicit closing delimiters (`[aslano]` for `objects` and `[aslana]` for `arrays`) are not necessary for the outermost unclosed structure at the end of a stream. Adding closing delimiters on dangling scopes MUST be permitted but strictly optional.
 
-#### 16.1 Example of auto-closing
+#### 18.1 Example of auto-closing
 
 ```aslan
 [asland_person][aslano]
@@ -426,12 +430,12 @@ ASLAN implements automatic closing of dangling block scopes (`object`s and `arra
 
 In this example, only the outermost `person` `object` doesn't need to be explicitly closed. The `hobbies` `array` must be closed explicitly to differentiate it from a potential object with numeric string keys. The `address` `object` is left unclosed as it's the last nested structure within `person`.
 
-#### 16.2 Best practices
+#### 18.2 Best practices
 
 - It is RECOMMENDED to explicitly close all non-dangling structures to ensure clear intent and prevent ambiguity. Only rely on auto-closing for the outermost structure if it's left unclosed at the end of the stream.
 - Since `instruction`s apply to whole `part`s, it is RECOMMENDED for application developers to use them in conjunction with `part` delimiters when styling specific substrings, or using them to apply an operation such as adding a citation after a piece of text. However, `instruction` events do contain indices so an application developer can manually use multiple styles or operations via `instruction`s over a `part` if they need finer control and don't want the benefits of the ASLAN parser handling this.
 
-### 17. Implementation specifics
+### 19. Implementation specifics
 - It is RECOMMENDED to parse ASLAN strings one character at a time
 - Parsers MUST never look ahead as this will break the assumption of streaming compatibility
 - Parsers MUST provide the option to buffer delimiters (i.e. when a `[` character arrives, wait for more characters until either it is recognized as an ASLAN delimiter, or recognized as part of regular string content) to ensure that application developers can directly display ASLAN to an end user without partially streamed delimiters being rendered. This is especially true for `instruction` & `part` delimiters which regularly appear in string content. It is strongly RECOMMENDED that buffering delimiters is the default option for parsers.
