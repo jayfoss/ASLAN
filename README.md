@@ -404,7 +404,7 @@ The `go` delimiter is strictly optional and for a single ASLAN result is unneces
 ASLAN parsers MUST implement the `strictStart` flag and have it default to `false`.
 
 #### 14.1 Example `go` usage
-1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi][aslanv]` is equivalent to:
+1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi][aslanv]` with `strictStart` set to `true` is equivalent to:
 
 ```json
 {
