@@ -391,8 +391,60 @@ Any `data` field can have more than one `void` delimiter but all `void` delimite
 ```
 
 ### 14. Rules for `go`s
+`go` delimiters MUST adhere to the syntax `[<PREFIX>g]`. If the parser has the `strictStart` flag enabled, it must only start trying to parse content as ASLAN after the `go` delimiter.
 
-### 15. Rules for `stops`s
+If the `strictStart` flag is disabled, all content in the stream will be parsed as ASLAN and any `go` delimiter will be ignored.
+
+Multiple `go` delimiters are allowed in a stream but this creates multi-ASLAN i.e. multiple ASLAN objects will be output from a single stream. This allows for ASLAN to be used in complex outputs such as multi-stage LLM calls with tool calls.
+
+Each time a `go` delimiter is encountered, the current state of the result object MUST be added to the output array and all other parser state MUST be reset.
+
+The `go` delimiter is strictly optional and for a single ASLAN result is unnecessary. However, it may still be useful if the application developer doesn't want LLM preamble to end up in the result object (although the preferred way to handle this is to just ignore the `_default` field application code and explicitly start your first desired field with `[<PREFIX>d]`).
+
+ASLAN parsers MUST implement the `strictStart` flag and have it default to `false`.
+
+#### 14.1 Example `go` usage
+1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi][aslanv]` is equivalent to:
+
+```json
+{
+  "_default": "Here is some some valid ASLAN I have created for you: ",
+  "hi": "Hello",
+  "lo": "World!",
+  "fi": null
+}
+```
+
+2. The string `Here is some some valid ASLAN I have created for you: [aslang][asland_hi]Hello [asland_lo]World![asland_fi][aslanv]` with `strictStart` set to `true` is equivalent to:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello",
+  "lo": "World!",
+  "fi": null
+}
+```
+
+3. The string `Here is some some valid ASLAN I have created for you: [aslang][asland_hi]Hello [asland_lo]World![asland_fi][aslanv][aslang]Here is some more content` with `strictStart` set to `true` is equivalent to:
+
+```json
+[
+  {
+    "_default": null,
+    "hi": "Hello",
+    "lo": "World!",
+    "fi": null
+  },
+  {
+    "_default": "Here is some more content",
+  }
+]
+```
+
+Note that an ASLAN parser, whether it has encountered multi-ASLAN or single-ASLAN MUST always output the final result of a parsed stream as an array of 1 or more ASLAN objects. For brevity in this spec, we only show the wrapper array when there are multiple elements.
+
+### 15. Rules for `stop`s
 
 ### 16. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate `void`s or `void`s mixed with string content by simply ignoring the duplicates or additional string content.
