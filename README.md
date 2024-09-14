@@ -453,6 +453,52 @@ The `stop` delimiter is strictly optional and is designed purely as a safe way t
 
 If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the previously accumulated result MUST be added to the result array and the parser state MUST be reset. The next ASLAN object MUST start being parsed from the first post-`stop` non-`stop` delimiter (this includes `field-scope` delimiters such as `instruction` but in this case the `part` that the `instruction` targets will start from the `instruction` delimiter).
 
+It should be noted that the `go` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior.
+
+#### 15.1 Example `go` usage
+1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi]Example\nThere I successfully generated ASLAN for you.` with `strictEnd` set to `true` is equivalent to:
+
+```json
+{
+  "_default": "Here is some some valid ASLAN I have created for you: ",
+  "hi": "Hello",
+  "lo": "World!",
+  "fi": "Example\nThere I successfully generated ASLAN for you."
+}
+```
+
+2. The string `[asland_hi]Hello [asland_lo]World![asland_fi]Example[aslands]\nThere I successfully generated ASLAN for you.` with `strictEnd` set to `true` is equivalent to:
+
+```json
+{
+  "_default": null,
+  "hi": "Hello",
+  "lo": "World!",
+  "fi": "Example"
+}
+```
+
+3. The string `[asland_hi]Hello [asland_lo]World![asland_fi]Example[aslans][asland_new]Here is some more content` with `strictStart` set to `true` is equivalent to:
+
+```json
+[
+  {
+    "_default": null,
+    "hi": "Hello",
+    "lo": "World!",
+    "fi": "Example"
+  },
+  {
+    "_default": null,
+    "new": "Here is some more content"
+  }
+]
+```
+
+Of course, the `stop` and `go` delimiters can be combined for complex multi-ASLAN use cases.
+
+It should be noted that the `stop` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior.
+
 ### 16. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate `void`s or `void`s mixed with string content by simply ignoring the duplicates or additional string content.
 
