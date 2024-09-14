@@ -451,6 +451,8 @@ If the `strictEnd` flag is disabled, all content in the stream will be parsed as
 
 The `stop` delimiter is strictly optional and is designed purely as a safe way to avoid LLM epilogue being included in the result. It is unnecessary to use the `stop` delimiter in conjunction with the `go` delimiter if you are certain there will be no epilogue since the `go` delimiter starts a new ASLAN object by itself.
 
+If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the previously accumulated result MUST be added to the result array and the parser state MUST be reset. The next ASLAN object MUST start being parsed from the first post-`stop` non-`stop` delimiter (this includes `field-scope` delimiters such as `instruction` but in this case the `part` that the `instruction` targets will start from the `instruction` delimiter).
+
 ### 16. Error handling
 ASLAN is designed specifically for IO in non-deterministic LLM based systems. As such, it aims to be permissive and forgiving. Where other data notation parsers may throw errors, ASLAN is designed to be able to ignore the issue and recover. An example of this is how ASLAN deals with duplicate `void`s or `void`s mixed with string content by simply ignoring the duplicates or additional string content.
 
