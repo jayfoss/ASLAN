@@ -182,7 +182,7 @@ Every `data` delimiter inside an `object` block will create a field in that `obj
 }
 ```
 
-2. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz![aslano][asland_x][aslano][asland_y]you are reading spec[asland_z]and it continues here` is equivalent to the JSON:
+2. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][asland_bar]Baz![aslano][asland_x][aslano][asland_y]you are reading spec[asland_z]and it continues here` is equivalent to the JSON:
 
 ```json
 {
