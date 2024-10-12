@@ -96,24 +96,34 @@ function dataInsertionTypeToString(type: ASLANDataInsertionType) {
   }
 }
 
+type ASLANParserStateStack = {
+  innerResult: ASLANObject | ASLANArray;
+  dataInsertionTypes: { [key: string]: ASLANDataInsertionType };
+  dataInsertionLocks: { [key: string]: boolean };
+};
+
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
   private result: ASLANObject = {
     _default: null,
   };
-  private stack: (ASLANObject | ASLANArray)[] = [this.result];
-  private currentKey: string = '_default';
-  private currentDelimiter: ASLANDelimiterData | null = null;
-  private currentValue: string = '';
-  private delimiterBuffer: string = '';
-  private delimiterOpenSubstring: string;
-  private currentKeyVoid = false;
   private dataInsertionTypes: { [key: string]: ASLANDataInsertionType } = {
     _default: ASLANDataInsertionType.DEFAULT,
   };
   private dataInsertionLocks: { [key: string]: boolean } = {
     _default: false,
   };
+  private stack: ASLANParserStateStack[] = [{
+    innerResult: this.result,
+    dataInsertionTypes: this.dataInsertionTypes,
+    dataInsertionLocks: this.dataInsertionLocks,
+  }];
+  private currentKey: string = '_default';
+  private currentDelimiter: ASLANDelimiterData | null = null;
+  private currentValue: string = '';
+  private delimiterBuffer: string = '';
+  private delimiterOpenSubstring: string;
+  private currentKeyVoid = false;
 
   constructor(public readonly parserSettings: ASLANParserSettings = {
     prefix: 'aslan',
@@ -132,7 +142,7 @@ export class ASLANParser {
       this.handleNextChar(char);
     }
     this.close();
-    return this.result;
+    return this.stack[0].innerResult as ASLANObject;
   }
 
   parseNext(input: string) {
@@ -377,7 +387,19 @@ export class ASLANParser {
       //VALID OBJECT DELIMITER
       this.state = ASLANParserState.OBJECT;
       this.delimiterBuffer = '';
+      if(this.getLatestResult()[this.currentKey]) {
+        if(this.stack.length > 1) {
+          this.stack.pop();
+        }
+        return;
+      }
       this.currentValue = '';
+      this.getLatestResult()[this.currentKey] = {};
+      this.stack.push({
+        innerResult: this.getLatestResult()[this.currentKey] as ASLANObject,
+        dataInsertionTypes: {},
+        dataInsertionLocks: {},
+      });
       return;
     }
     //Spec: Object delimiters have no <CONTENT> or args
@@ -737,15 +759,15 @@ export class ASLANParser {
   private storeCurrentValue() {
     if (this.currentKeyVoid) {
       this.currentValue = '';
-      this.result[this.currentKey] = null;
+      this.getLatestResult()[this.currentKey] = null;
       return;
     }
     if (this.currentValue) {
-      if (!this.result[this.currentKey]) {
-        this.result[this.currentKey] = '';
+      if (!this.getLatestResult()[this.currentKey]) {
+        this.getLatestResult()[this.currentKey] = '';
       }
       if (!this.dataInsertionLocks[this.currentKey]) {
-        this.result[this.currentKey] += this.currentValue;
+        this.getLatestResult()[this.currentKey] += this.currentValue;
       }
       this.currentValue = '';
     }
@@ -755,10 +777,11 @@ export class ASLANParser {
     //Spec: Data insertion type can only be set once for a given key in an object/array.
     //NOTE: We keep the behavior as defined on the first occurrence of the key to avoid LLM instability causing difficult to predict behavior.
     if (this.dataInsertionTypes[this.currentKey] !== undefined) {
-      //If we're trying to set the type again then we've hit a duplicate key so check if it's a KEEP_LAST and clear the value if so.
+      // If we're trying to set the type again then we've hit a duplicate key so check if it's a KEEP_LAST and clear the value if so
+      // Otherwise if it's KEEP_FIRST lock future appearances of the key.
       switch (this.dataInsertionTypes[this.currentKey]) {
         case ASLANDataInsertionType.KEEP_LAST:
-          this.result[this.currentKey] = '';
+          this.getLatestResult()[this.currentKey] = '';
           break;
         case ASLANDataInsertionType.KEEP_FIRST:
           this.dataInsertionLocks[this.currentKey] = true;
@@ -783,7 +806,11 @@ export class ASLANParser {
   }
 
   getResult() {
-    return this.result;
+    return this.stack[0].innerResult;
+  }
+
+  private getLatestResult() {
+    return this.stack[this.stack.length - 1].innerResult as ASLANObject;
   }
 }
 

@@ -1,6 +1,6 @@
 import { ASLANParser } from "../src/aslan-parser";
 
-describe('ASLANParser', () => {
+describe('ASLANParser Data', () => {
   let parser: ASLANParser;
   
   beforeEach(() => {
