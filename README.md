@@ -445,7 +445,7 @@ ASLAN parsers MUST implement the `strictStart` flag and have it default to `fals
 Note that an ASLAN parser, whether it has encountered multi-ASLAN or single-ASLAN MUST always output the final result of a parsed stream as an array of 1 or more ASLAN objects. For brevity in this spec, we only show the wrapper array when there are multiple elements.
 
 ### 15. Rules for `stop`s
-`stop` delimiters MUST adhere to the syntax `[<PREFIX>s]`. If the parser has the `strictEnd` flag enabled, it must stop start trying to parse content as ASLAN after the `stop` delimiter.
+`stop` delimiters MUST adhere to the syntax `[<PREFIX>s]`. If the parser has the `strictEnd` flag enabled, it must stop trying to parse content as ASLAN after the `stop` delimiter.
 
 If the `strictEnd` flag is disabled, all content in the stream will be parsed as ASLAN and any `stop` delimiter will be ignored.
 
@@ -455,7 +455,7 @@ If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the
 
 It should be noted that the `go` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior.
 
-#### 15.1 Example `go` usage
+#### 15.1 Example `stop` usage
 1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi]Example\nThere I successfully generated ASLAN for you.` with `strictEnd` set to `true` is equivalent to:
 
 ```json
