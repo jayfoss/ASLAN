@@ -63,6 +63,8 @@ enum ASLANParserState {
   VOID_DELIMITER,
   PART_DELIMITER,
   DATA,
+  GO,
+  STOP,
 }
 
 type ASLANParserSettings = {
@@ -78,27 +80,43 @@ type ASLANParserSettings = {
   };
 };
 
-class ASLANParser {
+export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
-  private prefix: string;
-  private result: ASLANObject = {};
+  private result: ASLANObject = {
+    _default: null,
+  };
   private stack: (ASLANObject | ASLANArray)[] = [this.result];
   private currentKey: string = '_default';
   private currentDelimiter: ASLANDelimiterData | null = null;
   private currentValue: string = '';
   private delimiterBuffer: string = '';
   private delimiterOpenSubstring: string;
+  private currentKeyVoid = false;
 
-  constructor(prefix: string = 'aslan') {
-    this.prefix = prefix;
-    this.delimiterOpenSubstring = '[' + this.prefix;
+  constructor(public readonly parserSettings: ASLANParserSettings = {
+    prefix: 'aslan',
+    defaultFieldName: '_default',
+    eventListeners: [],
+    strictStart: true,
+    strictEnd: true,
+    emittableEvents: { content: true, end: true, endData: true },
+  }) {
+    this.delimiterOpenSubstring = '[' + parserSettings.prefix;
+    this.currentKey = parserSettings.defaultFieldName;
   }
 
   parse(input: string): ASLANObject {
     for (let char of input) {
       this.handleNextChar(char);
     }
+    this.close();
     return this.result;
+  }
+
+  parseNext(input: string) {
+    for (let char of input) {
+      this.handleNextChar(char);
+    }
   }
 
   getCurrentValue() {
@@ -119,6 +137,12 @@ class ASLANParser {
         break;
       case ASLANParserState.STOP_DELIMITER:
         this.handleStopDelimiter(char);
+        break;
+      case ASLANParserState.GO:
+        this.handleGo(char);
+        break;
+      case ASLANParserState.STOP:
+        this.handleStop(char);
         break;
       case ASLANParserState.START:
         this.handleStart(char);
@@ -189,9 +213,33 @@ class ASLANParser {
     }
   }
 
-  private handleGoDelimiter(char: string) {}
+  private handleGoDelimiter(char: string) {
+    if (char === ']') {
+      //Spec: Go delimiters have no <CONTENT> or args
+      //VALID GO DELIMITER
+      this.state = ASLANParserState.GO;
+      this.delimiterBuffer = '';
+      this.currentValue = '';
+      return;
+    }
+    //Spec: Go delimiters have no <CONTENT> or args
+    //INVALID GO DELIMITER
+    this.exitInvalidDelimiterIntoDATA(char);
+  }
 
-  private handleStopDelimiter(char: string) {}
+  private handleStopDelimiter(char: string) {
+    if (char === ']') {
+      //Spec: Stop delimiters have no <CONTENT> or args
+      //VALID STOP DELIMITER
+      this.state = ASLANParserState.STOP;
+      this.delimiterBuffer = '';
+      this.currentValue = '';
+      return;
+    }
+    //Spec: Stop delimiters have no <CONTENT> or args
+    //INVALID STOP DELIMITER
+    this.exitInvalidDelimiterIntoDATA(char);
+  }
 
   private handleStart(char: string) {
     if (char === '[') {
@@ -222,7 +270,7 @@ class ASLANParser {
 
   private handleDelimiter(char: string) {
     this.currentDelimiter = {
-      prefix: this.prefix,
+      prefix: this.parserSettings.prefix,
       suffix: null,
       content: null,
       args: [],
@@ -305,7 +353,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Object delimiters have no <CONTENT> or args
       //VALID OBJECT DELIMITER
-      console.log('valid object delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.OBJECT;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -362,7 +409,6 @@ class ASLANParser {
       }
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>]
       //VALID INSTRUCTION DELIMITER
-      console.log('valid instruction delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -381,11 +427,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID INSTRUCTION DELIMITER
-      console.log(
-        'valid instruction delimiter',
-        this.delimiterBuffer,
-        this.currentDelimiter
-      );
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -404,7 +445,6 @@ class ASLANParser {
 
   handleDataDelimiter(char: string) {
     if (char === ']') {
-      console.log('valid data delimiter', this.delimiterBuffer);
       //Spec: Data delimiters must contain <CONTENT>
       //INVALID DATA DELIMITER
       return this.exitInvalidDelimiterIntoDATA(char);
@@ -433,6 +473,7 @@ class ASLANParser {
       this.currentDelimiter!.args = [''];
       this.currentValue = '';
       this.delimiterBuffer += char;
+      this.nextKey();
       return;
     }
     if (char === '_' && this.currentDelimiter!.content === '') {
@@ -448,8 +489,8 @@ class ASLANParser {
       }
       //Spec: Data delimiter of the form [<PREFIX>d_<CONTENT>]
       //VALID DATA DELIMITER
-      console.log('valid data delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.DATA;
+      this.nextKey();
       this.delimiterBuffer = '';
       this.currentValue = '';
       return;
@@ -467,11 +508,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Data delimiter of the form [<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID DATA DELIMITER
-      console.log(
-        'valid data delimiter',
-        this.delimiterBuffer,
-        this.currentDelimiter
-      );
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -492,7 +528,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Array delimiters have no <CONTENT> or args
       //VALID ARRAY DELIMITER
-      console.log('valid array delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.ARRAY;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -507,10 +542,10 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Void delimiters have no <CONTENT> or args
       //VALID VOID DELIMITER
-      console.log('valid void delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      this.currentKeyVoid = true;
       return;
     }
     //Spec: Void delimiters have no <CONTENT> or args
@@ -522,7 +557,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Comment delimiters have no <CONTENT> or args
       //VALID COMMENT DELIMITER
-      console.log('valid comment delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.COMMENT;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -565,11 +599,6 @@ class ASLANParser {
       }
       //Spec: Escape delimiter of the form [<PREFIX>e_<CONTENT>]
       //VALID ESCAPE DELIMITER
-      console.log(
-        'valid escape delimiter',
-        this.delimiterBuffer,
-        this.currentDelimiter
-      );
       this.state = ASLANParserState.ESCAPE;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -588,7 +617,6 @@ class ASLANParser {
     if (char === ']') {
       //Spec: Part delimiters have no <CONTENT> or args
       //VALID PART DELIMITER
-      console.log('valid part delimiter', this.delimiterBuffer);
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
@@ -599,12 +627,40 @@ class ASLANParser {
     this.exitInvalidDelimiterIntoDATA(char);
   }
 
+  handleGo(char: string) {
+    if (char === '[') {
+      this.state = ASLANParserState.MAYBE_DELIMITER;
+      this.delimiterBuffer += char;
+      return;
+    }
+    this.appendToCurrentValue(char);
+  }
+
+  handleStop(char: string) {
+    if (char === '[') {
+      this.state = ASLANParserState.MAYBE_DELIMITER;
+      this.delimiterBuffer += char;
+      return;
+    }
+    this.appendToCurrentValue(char);
+  }
+
   handleObject(char: string) {
-    throw new Error('Method not implemented.');
+    if (char === '[') {
+      this.state = ASLANParserState.MAYBE_DELIMITER;
+      this.delimiterBuffer += char;
+      return;
+    }
+    this.appendToCurrentValue(char);
   }
 
   handleArray(char: string) {
-    throw new Error('Method not implemented.');
+    if (char === '[') {
+      this.state = ASLANParserState.MAYBE_DELIMITER;
+      this.delimiterBuffer += char;
+      return;
+    }
+    this.appendToCurrentValue(char);
   }
 
   handleComment(char: string) {
@@ -619,7 +675,7 @@ class ASLANParser {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
     }
-    this.currentValue += char;
+    this.appendToCurrentValue(char);
   }
 
   handleData(char: string) {
@@ -628,13 +684,55 @@ class ASLANParser {
       this.delimiterBuffer += char;
       return;
     }
-    this.currentValue += char;
+    this.appendToCurrentValue(char);
+    this.storeCurrentValue();
+  }
+
+  private setCurrentValue(value: string) {
+    this.currentValue = value;
+  }
+
+  private appendToCurrentValue(value: string) {
+    this.currentValue += value;
+    console.log('currentValue', this.currentValue);
+  }
+
+  private storeCurrentValue() {
+    if (this.currentKeyVoid) {
+      this.currentValue = '';
+      this.result[this.currentKey] = null;
+      return;
+    }
+    if (this.currentValue) {
+      console.log(this.currentKey, this.currentValue);
+      console.log(this.delimiterBuffer);
+      if (!this.result[this.currentKey]) {
+        this.result[this.currentKey] = '';
+      }
+      this.result[this.currentKey] += this.currentValue;
+      this.currentValue = '';
+    }
+  }
+
+  private nextKey() {
+    if (this.currentDelimiter?.content) {
+      this.currentKey = this.currentDelimiter.content;
+    }
+    this.currentKeyVoid = false;
+  }
+
+  close() {
+    this.storeCurrentValue();
+  }
+
+  getResult() {
+    return this.result;
   }
 }
 
 const parser = new ASLANParser();
 const result = parser.parse(
-  '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test'
+  '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi'
 );
 console.log(result);
 console.log(parser.getCurrentValue());
