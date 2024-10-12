@@ -36,4 +36,49 @@ describe('ASLANParser', () => {
       lo: 'World!',
     });
   });
+
+  test('parses simple string with keep first key behavior', () => {
+    const result = parser.parse('[asland_hi:f]Hello [asland_lo]World![asland_hi]Hello');
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello ',
+      lo: 'World!',
+    });
+  });
+
+  test('parses simple string with keep last key behavior', () => {
+    const result = parser.parse('[asland_hi:l]Hello [asland_lo]World![asland_hi]Hello');
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello',
+      lo: 'World!',
+    });
+  });
+
+  test('parses simple string with keep first key behavior, ignore duplicate behavior redefinition', () => {
+    const result = parser.parse('[asland_hi:f]Hello [asland_lo]World![asland_hi:a]Hello[asland_hi:l]Test');
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello ',
+      lo: 'World!',
+    });
+  });
+
+  test('parses simple string with keep first key behavior on non first key, treated like default append', () => {
+    const result = parser.parse('[asland_hi]Hello [asland_lo]World![asland_hi:f]Hello[asland_hi:l]Test');
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello HelloTest',
+      lo: 'World!',
+    });
+  });
+
+  test('parses simple string with keep last key behavior on non first key, treated like default append', () => {
+    const result = parser.parse('[asland_hi]Hello [asland_lo]World![asland_hi:l]Hello[asland_hi:f]Test');
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello HelloTest',
+      lo: 'World!',
+    });
+  });
 });

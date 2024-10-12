@@ -80,6 +80,22 @@ type ASLANParserSettings = {
   };
 };
 
+enum ASLANDataInsertionType {
+  DEFAULT,
+  APPEND,
+  KEEP_FIRST,
+  KEEP_LAST,
+}
+
+function dataInsertionTypeToString(type: ASLANDataInsertionType) {
+  switch (type) {
+    case ASLANDataInsertionType.APPEND: return 'APPEND';
+    case ASLANDataInsertionType.KEEP_FIRST: return 'KEEP_FIRST';
+    case ASLANDataInsertionType.KEEP_LAST: return 'KEEP_LAST';
+    default: return 'DEFAULT';
+  }
+}
+
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
   private result: ASLANObject = {
@@ -92,6 +108,12 @@ export class ASLANParser {
   private delimiterBuffer: string = '';
   private delimiterOpenSubstring: string;
   private currentKeyVoid = false;
+  private dataInsertionTypes: { [key: string]: ASLANDataInsertionType } = {
+    _default: ASLANDataInsertionType.DEFAULT,
+  };
+  private dataInsertionLocks: { [key: string]: boolean } = {
+    _default: false,
+  };
 
   constructor(public readonly parserSettings: ASLANParserSettings = {
     prefix: 'aslan',
@@ -493,6 +515,7 @@ export class ASLANParser {
       this.nextKey();
       this.delimiterBuffer = '';
       this.currentValue = '';
+      this.setDataInsertionType(ASLANDataInsertionType.DEFAULT);
       return;
     }
     if (!/^[a-zA-Z0-9_]$/.test(char)) {
@@ -511,6 +534,21 @@ export class ASLANParser {
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      const arg = this.currentDelimiter?.args[0] as ASLANDuplicateKeyBehavior;
+      switch (arg) {
+        case 'a':
+          this.setDataInsertionType(ASLANDataInsertionType.APPEND);
+          break;
+        case 'f':
+          this.setDataInsertionType(ASLANDataInsertionType.KEEP_FIRST);
+          break;
+        case 'l':
+          this.setDataInsertionType(ASLANDataInsertionType.KEEP_LAST);
+          break;
+        default:
+          this.setDataInsertionType(ASLANDataInsertionType.DEFAULT);
+          break;
+      }
       return;
     }
     if (char === ':') {
@@ -694,7 +732,6 @@ export class ASLANParser {
 
   private appendToCurrentValue(value: string) {
     this.currentValue += value;
-    console.log('currentValue', this.currentValue);
   }
 
   private storeCurrentValue() {
@@ -704,14 +741,34 @@ export class ASLANParser {
       return;
     }
     if (this.currentValue) {
-      console.log(this.currentKey, this.currentValue);
-      console.log(this.delimiterBuffer);
       if (!this.result[this.currentKey]) {
         this.result[this.currentKey] = '';
       }
-      this.result[this.currentKey] += this.currentValue;
+      if (!this.dataInsertionLocks[this.currentKey]) {
+        this.result[this.currentKey] += this.currentValue;
+      }
       this.currentValue = '';
     }
+  }
+
+  private setDataInsertionType(type: ASLANDataInsertionType) {
+    //Spec: Data insertion type can only be set once for a given key in an object/array.
+    //NOTE: We keep the behavior as defined on the first occurrence of the key to avoid LLM instability causing difficult to predict behavior.
+    if (this.dataInsertionTypes[this.currentKey] !== undefined) {
+      //If we're trying to set the type again then we've hit a duplicate key so check if it's a KEEP_LAST and clear the value if so.
+      switch (this.dataInsertionTypes[this.currentKey]) {
+        case ASLANDataInsertionType.KEEP_LAST:
+          this.result[this.currentKey] = '';
+          break;
+        case ASLANDataInsertionType.KEEP_FIRST:
+          this.dataInsertionLocks[this.currentKey] = true;
+          break;
+        default:
+          break;
+      }
+      return;
+    }
+    this.dataInsertionTypes[this.currentKey] = type;
   }
 
   private nextKey() {
@@ -734,5 +791,3 @@ const parser = new ASLANParser();
 const result = parser.parse(
   '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi'
 );
-console.log(result);
-console.log(parser.getCurrentValue());
