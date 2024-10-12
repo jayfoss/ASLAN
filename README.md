@@ -169,7 +169,7 @@ Each closing `object` delimiter will shift the parser into the parent block scop
 Every `data` delimiter inside an `object` block will create a field in that `object` with the key name being the `<CONTENT>` of the `data` delimiter.
 
 #### 7.1 Example `object` usage
-1. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz!` and `[asland_hi]Hello [asland_lo]World![asland_foo][aslanc]This is a comment[aslano][aslan_bar]Baz!` are equivalent to the JSON:
+1. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][asland_bar]Baz!` and `[asland_hi]Hello [asland_lo]World![asland_foo][aslanc]This is a comment[aslano][asland_bar]Baz!` are equivalent to the JSON:
 
 ```json
 {
@@ -182,7 +182,7 @@ Every `data` delimiter inside an `object` block will create a field in that `obj
 }
 ```
 
-2. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz![aslano][asland_x][aslano][aslan_y]you are reading spec[aslan_z]and it continues here` is equivalent to the JSON:
+2. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][aslan_bar]Baz![aslano][asland_x][aslano][asland_y]you are reading spec[asland_z]and it continues here` is equivalent to the JSON:
 
 ```json
 {
