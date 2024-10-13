@@ -76,4 +76,21 @@ describe('ASLANParser Object', () => {
       "z": "and it continues here"
     });
   });
+
+  test('parses more complex string with nested objects', () => {
+    const result = parser.parse('[asland_hi]Hello [asland_lo]World![asland_foo][aslano][asland_bar]Baz![aslano][asland_x][aslano][asland_y][aslano][asland_z]and it continues here');
+    expect(result).toEqual({
+      "_default": null,
+      "hi": "Hello ",
+      "lo": "World!",
+      "foo": {
+        "bar": "Baz!"
+      },
+      "x": {
+        "y": {
+          "z": "and it continues here"
+        }
+      }
+    });
+  });
 });

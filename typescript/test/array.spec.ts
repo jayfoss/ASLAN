@@ -9,7 +9,6 @@ describe('ASLANParser Array', () => {
   
   test('parses simple string with array', () => {
     const result = parser.parse('[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry');
-    console.log(result);
     expect(result).toEqual({
       "_default": null,
       "fruits": [
@@ -43,6 +42,59 @@ describe('ASLANParser Array', () => {
         "C",
         "D"
       ]
+    });
+  });
+
+  test('parses simple string with more mixed array indices', () => {
+    const result = parser.parse('[asland_mixed_array][aslana][asland_2]A[asland_0]B[asland]C[asland]D[asland]E[asland_3]F[asland]G');
+    expect(result).toEqual({
+      "_default": null,
+      "mixed_array": [
+        "B",
+        undefined,
+        "A",
+        "CF",
+        "D",
+        "E",
+        "G"
+      ]
+    });
+  });
+
+  test('parses simple string with more mixed array indices and sibling object', () => {
+    const result = parser.parse('[asland_mixed_array][aslana][asland_2]A[asland_0]B[asland]C[asland]D[asland]E[asland_3]F[asland]G[aslana][asland_other]Not in array');
+    expect(result).toEqual({
+      "_default": null,
+      "mixed_array": [
+        "B",
+        undefined,
+        "A",
+        "CF",
+        "D",
+        "E",
+        "G"
+      ],
+      "other": "Not in array"
+    });
+  });
+
+  test('parses simple string with nested arrays', () => {
+    const result = parser.parse('[asland_mixed_array][aslana][asland_2]A[asland_0]B[asland]C[asland]D[asland]E[asland][aslana][asland]hi[asland]lo[aslana][asland]G');
+    expect(result).toEqual({
+      "_default": null,
+      "mixed_array": [
+        "B",
+        undefined,
+        "A",
+        "C",
+        "D",
+        "E",
+        [
+          "hi",
+          "lo"
+        ],
+        "G"
+      ],
     });
   });
 });

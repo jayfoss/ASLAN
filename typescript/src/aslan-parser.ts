@@ -120,6 +120,8 @@ type ASLANParserStateStack = {
   innerResult: ASLANObject | ASLANArray;
   dataInsertionTypes: { [key: string]: ASLANDataInsertionType };
   dataInsertionLocks: { [key: string]: boolean };
+  currentKey: string | number;
+  minArrayIndex: number;
 };
 
 export class ASLANParser {
@@ -137,9 +139,9 @@ export class ASLANParser {
     innerResult: this.result,
     dataInsertionTypes: this.dataInsertionTypes,
     dataInsertionLocks: this.dataInsertionLocks,
+    currentKey: '_default',
+    minArrayIndex: 0,
   }];
-  private currentKey: string | number = '_default';
-  private minArrayIndex: number = 0;
   private currentDelimiter: ASLANDelimiterData | null = null;
   private currentValue: string = '';
   private delimiterBuffer: string = '';
@@ -156,7 +158,7 @@ export class ASLANParser {
     emittableEvents: { content: true, end: true, endData: true },
   }) {
     this.delimiterOpenSubstring = '[' + parserSettings.prefix;
-    this.currentKey = parserSettings.defaultFieldName;
+    this.stack[0].currentKey = parserSettings.defaultFieldName;
   }
 
   parse(input: string): ASLANObject {
@@ -413,20 +415,21 @@ export class ASLANParser {
       this.state = ASLANParserState.OBJECT;
       this.delimiterBuffer = '';
       const secondMostRecentMaterialDelimiter = this.get2ndMostRecentMaterialDelimiter();
-      if(this.getLatestResult()[this.currentKey] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
+      if(this.getLatestResult()[this.getCurrentKey()] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
         if(this.stack.length > 1) {
           this.stack.pop();
         }
         return;
       }
       this.currentValue = '';
-      this.getLatestResult()[this.currentKey] = {};
+      this.getLatestResult()[this.getCurrentKey()] = {};
       this.stack.push({
-        innerResult: this.getLatestResult()[this.currentKey] as ASLANObject,
+        innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANObject,
         dataInsertionTypes: {},
         dataInsertionLocks: {},
+        currentKey: '_default',
+        minArrayIndex: 0,
       });
-      this.currentKey = '_default';
       return;
     }
     //Spec: Object delimiters have no <CONTENT> or args
@@ -627,20 +630,21 @@ export class ASLANParser {
       this.state = ASLANParserState.ARRAY;
       this.delimiterBuffer = '';
       const secondMostRecentMaterialDelimiter = this.get2ndMostRecentMaterialDelimiter();
-      if(this.getLatestResult()[this.currentKey] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
+      if(this.getLatestResult()[this.getCurrentKey()] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
         if(this.stack.length > 1) {
           this.stack.pop();
         }
         return;
       }
       this.currentValue = '';
-      this.getLatestResult()[this.currentKey] = [];
+      this.getLatestResult()[this.getCurrentKey()] = [];
       this.stack.push({
-        innerResult: this.getLatestResult()[this.currentKey] as ASLANArray,
+        innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANArray,
         dataInsertionTypes: {},
         dataInsertionLocks: {},
+        currentKey: -1,
+        minArrayIndex: 0,
       });
-      this.currentKey = -1;
       return;
     }
     //Spec: Array delimiters have no <CONTENT> or args
@@ -809,15 +813,15 @@ export class ASLANParser {
   private storeCurrentValue() {
     if (this.currentKeyVoid) {
       this.currentValue = '';
-      this.getLatestResult()[this.currentKey] = null;
+      this.getLatestResult()[this.getCurrentKey()] = null;
       return;
     }
     if (this.currentValue) {
-      if (!this.getLatestResult()[this.currentKey]) {
-        this.getLatestResult()[this.currentKey] = '';
+      if (!this.getLatestResult()[this.getCurrentKey()]) {
+        this.getLatestResult()[this.getCurrentKey()] = '';
       }
-      if (!this.dataInsertionLocks[this.currentKey]) {
-        this.getLatestResult()[this.currentKey] += this.currentValue;
+      if (!this.dataInsertionLocks[this.getCurrentKey()]) {
+        this.getLatestResult()[this.getCurrentKey()] += this.currentValue;
       }
       this.currentValue = '';
     }
@@ -826,46 +830,46 @@ export class ASLANParser {
   private setDataInsertionType(type: ASLANDataInsertionType) {
     //Spec: Data insertion type can only be set once for a given key in an object/array.
     //NOTE: We keep the behavior as defined on the first occurrence of the key to avoid LLM instability causing difficult to predict behavior.
-    if (this.dataInsertionTypes[this.currentKey] !== undefined) {
+    if (this.dataInsertionTypes[this.getCurrentKey()] !== undefined) {
       // If we're trying to set the type again then we've hit a duplicate key so check if it's a KEEP_LAST and clear the value if so
       // Otherwise if it's KEEP_FIRST lock future appearances of the key.
-      switch (this.dataInsertionTypes[this.currentKey]) {
+      switch (this.dataInsertionTypes[this.getCurrentKey()]) {
         case ASLANDataInsertionType.KEEP_LAST:
-          this.getLatestResult()[this.currentKey] = '';
+          this.getLatestResult()[this.getCurrentKey()] = '';
           break;
         case ASLANDataInsertionType.KEEP_FIRST:
-          this.dataInsertionLocks[this.currentKey] = true;
+          this.dataInsertionLocks[this.getCurrentKey()] = true;
           break;
         default:
           break;
       }
       return;
     }
-    this.dataInsertionTypes[this.currentKey] = type;
+    this.dataInsertionTypes[this.getCurrentKey()] = type;
   }
 
   private nextKey() {
     const isArray = Array.isArray(this.getLatestResult());
-    if (isArray && !(this.currentDelimiter?.content)) {
-      console.log('Current key before: ', this.currentKey);
-      if (this.currentKey === -1) {
-        this.currentKey = 0;
-      } else {
-        if(typeof this.currentKey === 'number') {
-          this.currentKey = this.currentKey + 1;
+    if (isArray) {
+      if (this.currentDelimiter?.content) {
+        // Explicit index
+        const newIndex = parseInt(this.currentDelimiter.content);
+        if (!isNaN(newIndex)) {
+          this.setCurrentKey(newIndex);
+          this.setMinArrayIndex(Math.max(this.getMinArrayIndex(), newIndex + 1));
         } else {
-          this.currentKey = parseInt(this.currentKey) + 1;
+          this.setCurrentKey(this.getMinArrayIndex());
+          this.setMinArrayIndex(this.getMinArrayIndex() + 1);
         }
+      } else {
+        // Implicit index
+        this.setCurrentKey(this.getMinArrayIndex());
+        this.setMinArrayIndex(this.getMinArrayIndex() + 1);
       }
-      if (this.currentKey < this.minArrayIndex) {
-        this.currentKey = this.minArrayIndex;
-      }
-      return;
-    }
-    if (this.currentDelimiter?.content) {
-      this.currentKey = this.currentDelimiter.content;
-      if (isArray) {
-        this.minArrayIndex = Math.max(this.minArrayIndex + 1, parseInt(this.currentKey));
+    } else {
+      // Object
+      if (this.currentDelimiter?.content) {
+        this.setCurrentKey(this.currentDelimiter.content);
       }
     }
     this.currentKeyVoid = false;
@@ -877,6 +881,22 @@ export class ASLANParser {
 
   getResult() {
     return this.stack[0].innerResult;
+  }
+
+  private getCurrentKey() {
+    return this.stack[this.stack.length - 1].currentKey;
+  }
+
+  private setCurrentKey(key: string | number) {
+    this.stack[this.stack.length - 1].currentKey = key;
+  }
+
+  private getMinArrayIndex() {
+    return this.stack[this.stack.length - 1].minArrayIndex;
+  }
+
+  private setMinArrayIndex(index: number) {
+    this.stack[this.stack.length - 1].minArrayIndex = index;
   }
 
   private getLatestResult() {
