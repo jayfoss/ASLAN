@@ -1,4 +1,4 @@
-import { RecentItems } from "./recent-items";
+import { RecentItems } from './recent-items';
 
 type ASLANValue = string | ASLANObject | ASLANArray | null;
 type ASLANObject = { [key: string]: ASLANValue };
@@ -91,28 +91,42 @@ enum ASLANDataInsertionType {
 
 function dataInsertionTypeToString(type: ASLANDataInsertionType) {
   switch (type) {
-    case ASLANDataInsertionType.APPEND: return 'APPEND';
-    case ASLANDataInsertionType.KEEP_FIRST: return 'KEEP_FIRST';
-    case ASLANDataInsertionType.KEEP_LAST: return 'KEEP_LAST';
-    default: return 'DEFAULT';
+    case ASLANDataInsertionType.APPEND:
+      return 'APPEND';
+    case ASLANDataInsertionType.KEEP_FIRST:
+      return 'KEEP_FIRST';
+    case ASLANDataInsertionType.KEEP_LAST:
+      return 'KEEP_LAST';
+    default:
+      return 'DEFAULT';
   }
 }
 
 function delimiterTypeToString(type?: ASLANDelimiterType) {
-  if(type === undefined) {
+  if (type === undefined) {
     return '';
   }
   switch (type) {
-    case ASLANDelimiterType.DATA: return 'DATA';
-    case ASLANDelimiterType.OBJECT: return 'OBJECT';
-    case ASLANDelimiterType.INSTRUCTION: return 'INSTRUCTION';
-    case ASLANDelimiterType.ARRAY: return 'ARRAY';
-    case ASLANDelimiterType.COMMENT: return 'COMMENT';
-    case ASLANDelimiterType.ESCAPE: return 'ESCAPE';
-    case ASLANDelimiterType.PART: return 'PART';
-    case ASLANDelimiterType.VOID: return 'VOID';
-    case ASLANDelimiterType.GO: return 'GO';
-    case ASLANDelimiterType.STOP: return 'STOP';
+    case ASLANDelimiterType.DATA:
+      return 'DATA';
+    case ASLANDelimiterType.OBJECT:
+      return 'OBJECT';
+    case ASLANDelimiterType.INSTRUCTION:
+      return 'INSTRUCTION';
+    case ASLANDelimiterType.ARRAY:
+      return 'ARRAY';
+    case ASLANDelimiterType.COMMENT:
+      return 'COMMENT';
+    case ASLANDelimiterType.ESCAPE:
+      return 'ESCAPE';
+    case ASLANDelimiterType.PART:
+      return 'PART';
+    case ASLANDelimiterType.VOID:
+      return 'VOID';
+    case ASLANDelimiterType.GO:
+      return 'GO';
+    case ASLANDelimiterType.STOP:
+      return 'STOP';
   }
 }
 
@@ -135,13 +149,15 @@ export class ASLANParser {
   private dataInsertionLocks: { [key: string]: boolean } = {
     _default: false,
   };
-  private stack: ASLANParserStateStack[] = [{
-    innerResult: this.result,
-    dataInsertionTypes: this.dataInsertionTypes,
-    dataInsertionLocks: this.dataInsertionLocks,
-    currentKey: '_default',
-    minArrayIndex: 0,
-  }];
+  private stack: ASLANParserStateStack[] = [
+    {
+      innerResult: this.result,
+      dataInsertionTypes: this.dataInsertionTypes,
+      dataInsertionLocks: this.dataInsertionLocks,
+      currentKey: '_default',
+      minArrayIndex: 0,
+    },
+  ];
   private currentDelimiter: ASLANDelimiterData | null = null;
   private currentValue: string = '';
   private delimiterBuffer: string = '';
@@ -149,14 +165,16 @@ export class ASLANParser {
   private currentKeyVoid = false;
   private recentDelimiters: RecentItems<ASLANDelimiterType> = new RecentItems<ASLANDelimiterType>();
 
-  constructor(public readonly parserSettings: ASLANParserSettings = {
-    prefix: 'aslan',
-    defaultFieldName: '_default',
-    eventListeners: [],
-    strictStart: true,
-    strictEnd: true,
-    emittableEvents: { content: true, end: true, endData: true },
-  }) {
+  constructor(
+    public readonly parserSettings: ASLANParserSettings = {
+      prefix: 'aslan',
+      defaultFieldName: '_default',
+      eventListeners: [],
+      strictStart: true,
+      strictEnd: true,
+      emittableEvents: { content: true, end: true, endData: true },
+    },
+  ) {
     this.delimiterOpenSubstring = '[' + parserSettings.prefix;
     this.stack[0].currentKey = parserSettings.defaultFieldName;
   }
@@ -392,7 +410,7 @@ export class ASLANParser {
         this.currentValue += char;
         break;
     }
-    if(this.currentDelimiter?.suffix !== null) {
+    if (this.currentDelimiter?.suffix !== null) {
       this.recentDelimiters.add(this.currentDelimiter.suffix);
     }
   }
@@ -415,8 +433,11 @@ export class ASLANParser {
       this.state = ASLANParserState.OBJECT;
       this.delimiterBuffer = '';
       const secondMostRecentMaterialDelimiter = this.get2ndMostRecentMaterialDelimiter();
-      if(this.getLatestResult()[this.getCurrentKey()] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
-        if(this.stack.length > 1) {
+      if (
+        this.getLatestResult()[this.getCurrentKey()] ||
+        secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
+      ) {
+        if (this.stack.length > 1) {
           this.stack.pop();
         }
         return;
@@ -520,7 +541,7 @@ export class ASLANParser {
   handleDataDelimiter(char: string) {
     if (char === ']') {
       const latestResult = this.getLatestResult();
-      if(Array.isArray(latestResult)) {
+      if (Array.isArray(latestResult)) {
         //Spec: Data delimiters can have no <CONTENT> or args if the current result is an array.
         this.state = ASLANParserState.DATA;
         this.delimiterBuffer = '';
@@ -630,8 +651,11 @@ export class ASLANParser {
       this.state = ASLANParserState.ARRAY;
       this.delimiterBuffer = '';
       const secondMostRecentMaterialDelimiter = this.get2ndMostRecentMaterialDelimiter();
-      if(this.getLatestResult()[this.getCurrentKey()] || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
-        if(this.stack.length > 1) {
+      if (
+        this.getLatestResult()[this.getCurrentKey()] ||
+        secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
+      ) {
+        if (this.stack.length > 1) {
           this.stack.pop();
         }
         return;
@@ -904,11 +928,14 @@ export class ASLANParser {
   }
 
   private get2ndMostRecentMaterialDelimiter() {
-    return this.recentDelimiters.getNthMostRecentNotIn(2, new Set([ASLANDelimiterType.COMMENT, ASLANDelimiterType.ESCAPE]));
+    return this.recentDelimiters.getNthMostRecentNotIn(
+      2,
+      new Set([ASLANDelimiterType.COMMENT, ASLANDelimiterType.ESCAPE]),
+    );
   }
 }
 
 const parser = new ASLANParser();
 const result = parser.parse(
-  '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi'
+  '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi',
 );

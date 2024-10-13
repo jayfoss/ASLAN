@@ -41,7 +41,7 @@ export class RecentItems<T> {
 
   getNthMostRecentNotIn(n: number, excludedSet: Set<T>): T | undefined {
     if (n < 1) {
-      throw new Error("n must be a positive integer");
+      throw new Error('n must be a positive integer');
     }
 
     let count = 0;
@@ -53,7 +53,7 @@ export class RecentItems<T> {
         }
       }
     }
-    
+
     return undefined;
   }
 }
