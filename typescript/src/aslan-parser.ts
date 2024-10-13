@@ -136,6 +136,7 @@ type ASLANParserStateStack = {
   dataInsertionLocks: { [key: string]: boolean };
   currentKey: string | number;
   minArrayIndex: number;
+  voidFields: { [key: string]: boolean };
 };
 
 export class ASLANParser {
@@ -156,13 +157,13 @@ export class ASLANParser {
       dataInsertionLocks: this.dataInsertionLocks,
       currentKey: '_default',
       minArrayIndex: 0,
+      voidFields: {},
     },
   ];
   private currentDelimiter: ASLANDelimiterData | null = null;
   private currentValue: string = '';
   private delimiterBuffer: string = '';
   private delimiterOpenSubstring: string;
-  private currentKeyVoid = false;
   private recentDelimiters: RecentItems<ASLANDelimiterType> = new RecentItems<ASLANDelimiterType>();
 
   constructor(
@@ -450,6 +451,7 @@ export class ASLANParser {
         dataInsertionLocks: {},
         currentKey: '_default',
         minArrayIndex: 0,
+        voidFields: {},
       });
       return;
     }
@@ -668,6 +670,7 @@ export class ASLANParser {
         dataInsertionLocks: {},
         currentKey: -1,
         minArrayIndex: 0,
+        voidFields: {},
       });
       return;
     }
@@ -683,7 +686,7 @@ export class ASLANParser {
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
-      this.currentKeyVoid = true;
+      this.stack[this.stack.length - 1].voidFields[this.getCurrentKey()] = true;
       return;
     }
     //Spec: Void delimiters have no <CONTENT> or args
@@ -835,7 +838,7 @@ export class ASLANParser {
   }
 
   private storeCurrentValue() {
-    if (this.currentKeyVoid) {
+    if (this.stack[this.stack.length - 1].voidFields[this.getCurrentKey()]) {
       this.currentValue = '';
       this.getLatestResult()[this.getCurrentKey()] = null;
       return;
@@ -896,7 +899,6 @@ export class ASLANParser {
         this.setCurrentKey(this.currentDelimiter.content);
       }
     }
-    this.currentKeyVoid = false;
   }
 
   close() {
