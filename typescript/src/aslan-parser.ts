@@ -438,26 +438,36 @@ export class ASLANParser {
         this.getLatestResult()[this.getCurrentKey()] ||
         secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
       ) {
-        if (this.stack.length > 1) {
-          this.stack.pop();
+        if (typeof this.getLatestResult()[this.getCurrentKey()] !== 'object' || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
+          if (this.stack.length > 1) {
+            this.stack.pop();
+          }
+        }
+        else {
+          this.createNewObject();
         }
         return;
       }
-      this.currentValue = '';
-      this.getLatestResult()[this.getCurrentKey()] = {};
-      this.stack.push({
-        innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANObject,
-        dataInsertionTypes: {},
-        dataInsertionLocks: {},
-        currentKey: '_default',
-        minArrayIndex: 0,
-        voidFields: {},
-      });
+      this.createNewObject();
       return;
     }
     //Spec: Object delimiters have no <CONTENT> or args
     //INVALID OBJECT DELIMITER
     this.exitInvalidDelimiterIntoDATA(char);
+  }
+
+  createNewObject() {
+    this.currentValue = '';
+    this.getLatestResult()[this.getCurrentKey()] = {};
+    
+    this.stack.push({
+      innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANObject,
+      dataInsertionTypes: {},
+      dataInsertionLocks: {},
+      currentKey: '_default',
+      minArrayIndex: 0,
+      voidFields: {},
+    });
   }
 
   handleInstructionDelimiter(char: string) {
@@ -843,11 +853,12 @@ export class ASLANParser {
       this.getLatestResult()[this.getCurrentKey()] = null;
       return;
     }
+    //FIXME: Ensure object/array values are always override
     if (this.currentValue) {
       if (!this.getLatestResult()[this.getCurrentKey()]) {
         this.getLatestResult()[this.getCurrentKey()] = '';
       }
-      if (!this.dataInsertionLocks[this.getCurrentKey()]) {
+      if (!this.dataInsertionLocks[this.getCurrentKey()] && typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
         this.getLatestResult()[this.getCurrentKey()] += this.currentValue;
       }
       this.currentValue = '';

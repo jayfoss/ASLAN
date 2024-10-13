@@ -105,4 +105,39 @@ describe('ASLANParser Object', () => {
       },
     });
   });
+
+  test('parses simple string with multiple objects, same key, should override', () => {
+    const result = parser.parse(
+      '[asland_hi][aslano][asland_x]foo[aslano][asland_hi][aslano][asland_y]bar[aslano]',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: {
+        y: 'bar',
+      }
+    });
+  });
+
+  test('parses simple string with object then string, same key, should not override object', () => {
+    const result = parser.parse(
+      '[asland_hi][aslano][asland_x]foo[aslano][asland_hi]not overriding',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: {
+        x: 'foo',
+      }
+    });
+  });
+
+  test('parses simple string with string then object, same key, should not override', () => {
+    const result = parser.parse(
+      '[asland_hi]test[asland_hi][aslano][asland_y]bar[aslano]',
+    );
+    console.log(result);
+    expect(result).toEqual({
+      _default: null,
+      hi: 'test',
+    });
+  });
 });
