@@ -134,7 +134,7 @@ describe('ASLANParser Object', () => {
     const result = parser.parse(
       '[asland_hi]test[asland_hi][aslano][asland_y]bar[aslano]',
     );
-    console.log(result);
+
     expect(result).toEqual({
       _default: null,
       hi: {
