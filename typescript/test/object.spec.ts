@@ -130,14 +130,16 @@ describe('ASLANParser Object', () => {
     });
   });
 
-  test('parses simple string with string then object, same key, should not override', () => {
+  test('parses simple string with string then object, same key, should override string with object', () => {
     const result = parser.parse(
       '[asland_hi]test[asland_hi][aslano][asland_y]bar[aslano]',
     );
     console.log(result);
     expect(result).toEqual({
       _default: null,
-      hi: 'test',
+      hi: {
+        y: 'bar',
+      },
     });
   });
 });

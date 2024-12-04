@@ -137,6 +137,7 @@ type ASLANParserStateStack = {
   currentKey: string | number;
   minArrayIndex: number;
   voidFields: { [key: string]: boolean };
+  alreadySeenDuplicateKeys: { [key: string]: boolean };
 };
 
 export class ASLANParser {
@@ -158,6 +159,7 @@ export class ASLANParser {
       currentKey: '_default',
       minArrayIndex: 0,
       voidFields: {},
+      alreadySeenDuplicateKeys: {},
     },
   ];
   private currentDelimiter: ASLANDelimiterData | null = null;
@@ -439,6 +441,11 @@ export class ASLANParser {
         secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
       ) {
         if (typeof this.getLatestResult()[this.getCurrentKey()] !== 'object' || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
+          if (this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()]) {
+            this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()] = false;
+            this.createNewObject();
+            return;
+          }
           if (this.stack.length > 1) {
             this.stack.pop();
           }
@@ -467,6 +474,7 @@ export class ASLANParser {
       currentKey: '_default',
       minArrayIndex: 0,
       voidFields: {},
+      alreadySeenDuplicateKeys: {},
     });
   }
 
@@ -555,6 +563,7 @@ export class ASLANParser {
       const latestResult = this.getLatestResult();
       if (Array.isArray(latestResult)) {
         //Spec: Data delimiters can have no <CONTENT> or args if the current result is an array.
+        //VALID DATA DELIMITER
         this.state = ASLANParserState.DATA;
         this.delimiterBuffer = '';
         this.currentValue = '';
@@ -667,26 +676,42 @@ export class ASLANParser {
         this.getLatestResult()[this.getCurrentKey()] ||
         secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
       ) {
-        if (this.stack.length > 1) {
-          this.stack.pop();
+        if (typeof this.getLatestResult()[this.getCurrentKey()] !== 'object' || secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA) {
+          if (this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()]) {
+            this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()] = false;
+            this.createNewArray();
+            return;
+          }
+          if (this.stack.length > 1) {
+            this.stack.pop();
+          }
+        }
+        else {
+          this.createNewArray();
         }
         return;
       }
-      this.currentValue = '';
-      this.getLatestResult()[this.getCurrentKey()] = [];
-      this.stack.push({
-        innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANArray,
-        dataInsertionTypes: {},
-        dataInsertionLocks: {},
-        currentKey: -1,
-        minArrayIndex: 0,
-        voidFields: {},
-      });
+      this.createNewArray();
       return;
     }
     //Spec: Array delimiters have no <CONTENT> or args
     //INVALID ARRAY DELIMITER
     this.exitInvalidDelimiterIntoDATA(char);
+  }
+
+  createNewArray() {
+    this.currentValue = '';
+    this.getLatestResult()[this.getCurrentKey()] = [];
+    
+    this.stack.push({
+      innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANArray,
+      dataInsertionTypes: {},
+      dataInsertionLocks: {},
+      currentKey: -1,
+      minArrayIndex: 0,
+      voidFields: {},
+      alreadySeenDuplicateKeys: {},
+    });
   }
 
   handleVoidDelimiter(char: string) {
@@ -853,7 +878,7 @@ export class ASLANParser {
       this.getLatestResult()[this.getCurrentKey()] = null;
       return;
     }
-    //FIXME: Ensure object/array values are always override
+
     if (this.currentValue) {
       if (!this.getLatestResult()[this.getCurrentKey()]) {
         this.getLatestResult()[this.getCurrentKey()] = '';
@@ -908,6 +933,9 @@ export class ASLANParser {
       // Object
       if (this.currentDelimiter?.content) {
         this.setCurrentKey(this.currentDelimiter.content);
+        if (this.getCurrentKey() in this.getLatestResult()) {
+          this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.currentDelimiter.content] = true;
+        }
       }
     }
   }

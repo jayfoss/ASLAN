@@ -65,4 +65,34 @@ describe('ASLANParser Array', () => {
       mixed_array: ['B', undefined, 'A', 'C', 'D', 'E', ['hi', 'lo'], 'G'],
     });
   });
+
+  test('parses simple string with multiple arrays, same key, should override', () => {
+    const result = parser.parse(
+      '[asland_hi][aslana][asland]foo[aslana][asland_hi][aslana][asland]bar[aslana]',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: ['bar']
+    });
+  });
+
+  test('parses simple string with array then string, same key, should not override array', () => {
+    const result = parser.parse(
+      '[asland_hi][aslana][asland]foo[aslana][asland_hi]not overriding',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: ['foo']
+    });
+  });
+
+  test('parses simple string with string then array, same key, should override string with array', () => {
+    const result = parser.parse(
+      '[asland_hi]test[asland_hi][aslana][asland]bar[aslana]',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: ['bar'],
+    });
+  });
 });
