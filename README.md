@@ -322,20 +322,18 @@ The `escape` ends when the parser encounters another `escape` delimiter with the
 1. The ASLAN string
 
 ```aslan
-[asland_example_code]
-[aslane_CODE_BLOCK]
-function greet(name) {
+[asland_example_code][aslane_CODE_BLOCK]function greet(name) {
   console.log(`Hello, ${name}!`);
-  [asland_this_is_not_parsed]This is treated as a regular string
-}
-[aslane_CODE_BLOCK]
+  [asland_this_is_not_parsed]This is treated as a regular string[asland_neither_is_this]So is this
+}[aslane_CODE_BLOCK]
 ```
 
 is equivalent to the JSON:
 
 ```json
 {
-  "example_code": "function greet(name) {\n  console.log(`Hello, ${name}!`);\n  [asland_this_is_not_parsed]This is treated as a regular string\n}"
+  "_default": null,
+  "example_code": "function greet(name) {\n  console.log(`Hello, ${name}!`);\n  [asland_this_is_not_parsed]This is treated as a regular string[asland_neither_is_this]So is this\n}"
 }
 ```
 
