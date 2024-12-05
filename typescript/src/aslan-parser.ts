@@ -138,6 +138,7 @@ type ASLANParserStateStack = {
   minArrayIndex: number;
   voidFields: { [key: string]: boolean };
   alreadySeenDuplicateKeys: { [key: string]: boolean };
+  implicitArrays: { [key: string]: boolean };
 };
 
 export class ASLANParser {
@@ -160,6 +161,7 @@ export class ASLANParser {
       minArrayIndex: 0,
       voidFields: {},
       alreadySeenDuplicateKeys: {},
+      implicitArrays: {}
     },
   ];
   private currentDelimiter: ASLANDelimiterData | null = null;
@@ -479,6 +481,7 @@ export class ASLANParser {
       minArrayIndex: 0,
       voidFields: {},
       alreadySeenDuplicateKeys: {},
+      implicitArrays: {},
     });
   }
 
@@ -724,6 +727,7 @@ export class ASLANParser {
       minArrayIndex: 0,
       voidFields: {},
       alreadySeenDuplicateKeys: {},
+      implicitArrays: {},
     });
   }
 
@@ -832,9 +836,21 @@ export class ASLANParser {
     if (char === ']') {
       //Spec: Part delimiters have no <CONTENT> or args
       //VALID PART DELIMITER
+      if (!(this.getCurrentKey() in this.getLatestResult())) {
+        this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
+        this.getLatestResult()[this.getCurrentKey()] = [''];
+      }
+      else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+        this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
+        this.getLatestResult()[this.getCurrentKey()] = [this.getLatestResult()[this.getCurrentKey()]];
+      }
+      else {
+        this.getLatestResult()[this.getCurrentKey()].push('');
+      }
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      this.nextKey();
       return;
     }
     //Spec: Part delimiters have no <CONTENT> or args
@@ -929,6 +945,9 @@ export class ASLANParser {
       if (!this.dataInsertionLocks[this.getCurrentKey()] && typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
         this.getLatestResult()[this.getCurrentKey()] += this.currentValue;
       }
+      if (this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]) {
+        this.getLatestResult()[this.getCurrentKey()][this.getLatestResult()[this.getCurrentKey()].length - 1] += this.currentValue;
+      }
       this.currentValue = '';
     }
   }
@@ -1020,6 +1039,6 @@ export class ASLANParser {
 }
 
 const parser = new ASLANParser();
-const result = parser.parse(
-  '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi',
-);
+// const result = parser.parse(
+//   '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi',
+// );
