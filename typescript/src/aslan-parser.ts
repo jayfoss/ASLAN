@@ -7,7 +7,7 @@ type ASLANArray = ASLANValue[];
 type ASLANInstruction = {
   content: string;
   partIndex: number;
-  fieldName: string;
+  fieldName: string | number;
   path: string[];
   structure: ASLANObject;
   instruction: string;
@@ -31,7 +31,7 @@ enum ASLANDelimiterType {
 
 type ASLANDuplicateKeyBehavior = 'a' | 'f' | 'l';
 
-type ASLANEventListener = (instruction: ASLANInstruction) => void;
+type ASLANEventHandler = (instruction: ASLANInstruction) => void;
 
 type ASLANDelimiterData = {
   prefix: string | null;
@@ -72,7 +72,7 @@ enum ASLANParserState {
 type ASLANParserSettings = {
   prefix: string;
   defaultFieldName: string;
-  eventListeners: ASLANEventListener[];
+  eventListeners: ASLANEventListenerMap;
   strictStart: boolean;
   strictEnd: boolean;
   emittableEvents: {
@@ -130,7 +130,7 @@ function delimiterTypeToString(type?: ASLANDelimiterType) {
   }
 }
 
-type RegisteredInstruction = {
+type ASLANRegisteredInstruction = {
   key: string | number;
   name: string;
   index: number;
@@ -146,8 +146,18 @@ type ASLANParserStateStack = {
   voidFields: { [key: string]: boolean };
   alreadySeenDuplicateKeys: { [key: string]: boolean };
   implicitArrays: { [key: string]: boolean };
-  registeredInstructions: RegisteredInstruction[];
+  registeredInstructions: ASLANRegisteredInstruction[];
 };
+
+type ASLANEventListener = {
+  [key: string]: ASLANEventHandler;
+}
+
+type ASLANEventListenerMap = {
+  content: ASLANEventHandler[];
+  end: ASLANEventHandler[];
+  endData: ASLANEventHandler[];
+}
 
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
@@ -184,7 +194,11 @@ export class ASLANParser {
     public readonly parserSettings: ASLANParserSettings = {
       prefix: 'aslan',
       defaultFieldName: '_default',
-      eventListeners: [],
+      eventListeners: {
+        content: [],
+        end: [],
+        endData: [],
+      },
       strictStart: true,
       strictEnd: true,
       emittableEvents: { content: true, end: true, endData: true },
@@ -199,6 +213,7 @@ export class ASLANParser {
       this.handleNextChar(char);
     }
     this.close();
+    console.log(this.stack[this.stack.length - 1].registeredInstructions);
     return this.stack[0].innerResult as ASLANObject;
   }
 
@@ -544,17 +559,13 @@ export class ASLANParser {
       }
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>]
       //VALID INSTRUCTION DELIMITER
-      let index = -1;
-      if (this.getLatestResult()[this.getCurrentKey()]) {
-        if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
-          const array = this.getLatestResult()[this.getCurrentKey()];
-          index = array[array.length - 1].length;
-        }
-        else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
-          if (this.getLatestResult()[this.getCurrentKey()]) {
-            index = this.getLatestResult()[this.getCurrentKey()].length;
-          }
-        }
+      let index = 0;
+      if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
+        const array = this.getLatestResult()[this.getCurrentKey()];
+        index = array[array.length - 1].length;
+      }
+      else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+        index = this.getLatestResult()[this.getCurrentKey()].length;
       }
       this.state = ASLANParserState.DATA;
       if ((!this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()] || this.dataInsertionTypes[this.getCurrentKey()] !== ASLANDataInsertionType.KEEP_FIRST)) {
@@ -582,17 +593,13 @@ export class ASLANParser {
     if (char === ']') {
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID INSTRUCTION DELIMITER
-      let index = -1;
-      if (this.getLatestResult()[this.getCurrentKey()]) {
-        if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
-          const array = this.getLatestResult()[this.getCurrentKey()];
-          index = array[array.length - 1].length;
-        }
-        else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
-          if (this.getLatestResult()[this.getCurrentKey()]) {
-            index = this.getLatestResult()[this.getCurrentKey()].length;
-          }
-        }
+      let index = 0;
+      if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
+        const array = this.getLatestResult()[this.getCurrentKey()];
+        index = array[array.length - 1].length;
+      }
+      else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+        index = this.getLatestResult()[this.getCurrentKey()].length;
       }
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
@@ -618,7 +625,7 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  registerInstruction(instruction: RegisteredInstruction) {
+  registerInstruction(instruction: ASLANRegisteredInstruction) {
     this.stack[this.stack.length - 1].registeredInstructions.push(instruction);
   }
 
@@ -980,6 +987,24 @@ export class ASLANParser {
     this.storeCurrentValue();
   }
 
+  addEventListener(event: 'content' | 'end' | 'endData', callback: ASLANEventHandler) {
+    this.parserSettings.eventListeners[event].push(callback);
+  }
+
+  private emitContent(value: string, instruction: ASLANRegisteredInstruction, partIndex: number, fieldName: string | number, path: string[]) {
+    this.parserSettings.eventListeners.content.forEach((callback) => callback({
+      tag: 'CONTENT',
+      content: value,
+      partIndex,
+      fieldName,
+      path,
+      structure: this.getLatestResult(),
+      instruction: instruction.name,
+      args: instruction.args,
+      index: instruction.index,
+    }));
+  }
+
   private setCurrentValue(value: string) {
     this.currentValue = value;
   }
@@ -1001,9 +1026,16 @@ export class ASLANParser {
       }
       if (!this.dataInsertionLocks[this.getCurrentKey()] && typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
         this.getLatestResult()[this.getCurrentKey()] += this.currentValue;
+        for (const instruction of this.stack[this.stack.length - 1].registeredInstructions) {
+          this.emitContent(this.getLatestResult()[this.getCurrentKey()], instruction, 0, this.getCurrentKey(), this.getCurrentPath());
+        }
       }
       if (!this.dataInsertionLocks[this.getCurrentKey()] && this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]) {
         this.getLatestResult()[this.getCurrentKey()][this.getLatestResult()[this.getCurrentKey()].length - 1] += this.currentValue;
+        for (const instruction of this.stack[this.stack.length - 1].registeredInstructions) {
+          //FIXME: partIndex is wrong
+          this.emitContent(this.getLatestResult()[this.getCurrentKey()][this.getLatestResult()[this.getCurrentKey()].length - 1], instruction, this.getLatestResult()[this.getCurrentKey()].length - 1, typeof this.getCurrentKey() === 'number' ? (this.getCurrentKey() as number) : this.getCurrentKey(), this.getCurrentPath());
+        }
       }
       this.currentValue = '';
     }
@@ -1058,6 +1090,18 @@ export class ASLANParser {
         }
       }
     }
+  }
+
+  private getCurrentPath() {
+    const path: string[] = [];
+    for (const stackFrame of this.stack) {
+      if (typeof stackFrame.currentKey === 'string' && stackFrame.currentKey !== this.parserSettings.defaultFieldName) {
+        path.push(stackFrame.currentKey);
+      } else if (typeof stackFrame.currentKey === 'number') {
+        path.push(stackFrame.currentKey.toString());
+      }
+    }
+    return path;
   }
 
   close() {

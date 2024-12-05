@@ -45,4 +45,17 @@ describe('ASLANParser Instruction', () => {
     });
   });
 
+  test('parses simple string with instructions no part', () => {
+    parser.addEventListener('content', (event) => {
+      console.log(event);
+    });
+    const result = parser.parse(
+      '[asland_test][aslana][asland][aslano][asland_styled_text][aslani_bold][aslani_color:red]This is bold and red text.',
+    );
+    expect(result).toEqual({
+      "_default": null,
+      "styled_text": "This is bold and red text.",
+    });
+  });
+
 });
