@@ -130,6 +130,13 @@ function delimiterTypeToString(type?: ASLANDelimiterType) {
   }
 }
 
+type RegisteredInstruction = {
+  key: string | number;
+  name: string;
+  index: number;
+  args: string[];
+}
+
 type ASLANParserStateStack = {
   innerResult: ASLANObject | ASLANArray;
   dataInsertionTypes: { [key: string]: ASLANDataInsertionType };
@@ -139,6 +146,7 @@ type ASLANParserStateStack = {
   voidFields: { [key: string]: boolean };
   alreadySeenDuplicateKeys: { [key: string]: boolean };
   implicitArrays: { [key: string]: boolean };
+  registeredInstructions: RegisteredInstruction[];
 };
 
 export class ASLANParser {
@@ -161,7 +169,8 @@ export class ASLANParser {
       minArrayIndex: 0,
       voidFields: {},
       alreadySeenDuplicateKeys: {},
-      implicitArrays: {}
+      implicitArrays: {},
+      registeredInstructions: [],
     },
   ];
   private currentDelimiter: ASLANDelimiterData | null = null;
@@ -482,6 +491,7 @@ export class ASLANParser {
       voidFields: {},
       alreadySeenDuplicateKeys: {},
       implicitArrays: {},
+      registeredInstructions: [],
     });
   }
 
@@ -534,7 +544,27 @@ export class ASLANParser {
       }
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>]
       //VALID INSTRUCTION DELIMITER
+      let index = -1;
+      if (this.getLatestResult()[this.getCurrentKey()]) {
+        if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
+          const array = this.getLatestResult()[this.getCurrentKey()];
+          index = array[array.length - 1].length;
+        }
+        else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+          if (this.getLatestResult()[this.getCurrentKey()]) {
+            index = this.getLatestResult()[this.getCurrentKey()].length;
+          }
+        }
+      }
       this.state = ASLANParserState.DATA;
+      if ((!this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()] || this.dataInsertionTypes[this.getCurrentKey()] !== ASLANDataInsertionType.KEEP_FIRST)) {
+        this.registerInstruction({
+          name: this.currentDelimiter!.content || '',
+          index,
+          args: this.currentDelimiter!.args,
+          key: this.getCurrentKey(),
+        });
+      }
       this.delimiterBuffer = '';
       this.currentValue = '';
       return;
@@ -552,9 +582,29 @@ export class ASLANParser {
     if (char === ']') {
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID INSTRUCTION DELIMITER
+      let index = -1;
+      if (this.getLatestResult()[this.getCurrentKey()]) {
+        if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
+          const array = this.getLatestResult()[this.getCurrentKey()];
+          index = array[array.length - 1].length;
+        }
+        else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+          if (this.getLatestResult()[this.getCurrentKey()]) {
+            index = this.getLatestResult()[this.getCurrentKey()].length;
+          }
+        }
+      }
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      if ((!this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[this.getCurrentKey()] || this.dataInsertionTypes[this.getCurrentKey()] !== ASLANDataInsertionType.KEEP_FIRST)) {
+        this.registerInstruction({
+          name: this.currentDelimiter!.content || '',
+          index,
+          args: this.currentDelimiter!.args,
+          key: this.getCurrentKey(),
+        });
+      }
       return;
     }
     if (char === ':') {
@@ -566,6 +616,10 @@ export class ASLANParser {
     //Add to the current arg
     this.currentDelimiter!.args[this.currentDelimiter!.args.length - 1] += char;
     this.delimiterBuffer += char;
+  }
+
+  registerInstruction(instruction: RegisteredInstruction) {
+    this.stack[this.stack.length - 1].registeredInstructions.push(instruction);
   }
 
   handleDataDelimiter(char: string) {
@@ -728,6 +782,7 @@ export class ASLANParser {
       voidFields: {},
       alreadySeenDuplicateKeys: {},
       implicitArrays: {},
+      registeredInstructions: [],
     });
   }
 
@@ -836,16 +891,18 @@ export class ASLANParser {
     if (char === ']') {
       //Spec: Part delimiters have no <CONTENT> or args
       //VALID PART DELIMITER
-      if (!(this.getCurrentKey() in this.getLatestResult())) {
-        this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
-        this.getLatestResult()[this.getCurrentKey()] = [''];
-      }
-      else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
-        this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
-        this.getLatestResult()[this.getCurrentKey()] = [this.getLatestResult()[this.getCurrentKey()]];
-      }
-      else {
-        this.getLatestResult()[this.getCurrentKey()].push('');
+      if (!this.dataInsertionLocks[this.getCurrentKey()]) {
+        if (!(this.getCurrentKey() in this.getLatestResult())) {
+          this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
+          this.getLatestResult()[this.getCurrentKey()] = [''];
+        }
+        else if (typeof this.getLatestResult()[this.getCurrentKey()] === 'string') {
+          this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()] = true;
+          this.getLatestResult()[this.getCurrentKey()] = [this.getLatestResult()[this.getCurrentKey()]];
+        }
+        else {
+          this.getLatestResult()[this.getCurrentKey()].push('');
+        }
       }
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
@@ -945,7 +1002,7 @@ export class ASLANParser {
       if (!this.dataInsertionLocks[this.getCurrentKey()] && typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
         this.getLatestResult()[this.getCurrentKey()] += this.currentValue;
       }
-      if (this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]) {
+      if (!this.dataInsertionLocks[this.getCurrentKey()] && this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]) {
         this.getLatestResult()[this.getCurrentKey()][this.getLatestResult()[this.getCurrentKey()].length - 1] += this.currentValue;
       }
       this.currentValue = '';
@@ -961,6 +1018,7 @@ export class ASLANParser {
       switch (this.dataInsertionTypes[this.getCurrentKey()]) {
         case ASLANDataInsertionType.KEEP_LAST:
           this.getLatestResult()[this.getCurrentKey()] = '';
+          this.stack[this.stack.length - 1].registeredInstructions = this.stack[this.stack.length - 1].registeredInstructions.filter((instruction) => instruction.key !== this.getCurrentKey());
           break;
         case ASLANDataInsertionType.KEEP_FIRST:
           this.dataInsertionLocks[this.getCurrentKey()] = true;
