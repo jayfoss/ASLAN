@@ -46,11 +46,11 @@ describe('ASLANParser Instruction', () => {
   });
 
   test('parses simple string with instructions no part', () => {
-    parser.addEventListener('content', (event) => {
+    parser.addEventListener('end', (event) => {
       console.log(event);
     });
     const result = parser.parse(
-      '[asland_test][aslana][asland][aslano][asland_styled_text][aslani_bold][aslani_color:red]This is bold and red text.',
+      '[asland_test][aslana][asland][aslano][asland_styled_text][aslani_bold][aslani_color:red]This is bold and red text.[asland_next]Next item',
     );
     expect(result).toEqual({
       "_default": null,
