@@ -113,13 +113,13 @@ If the current `data` block scope has a string value, when the `data` block scop
   - an array of objects for every `instruction` in the `part` containing:
     - the `<CONTENT>` value of the `instruction`
     - all args in the `instruction`, in order, or an empty array if none exist
-    - the index of the `instruction` delimiter within the `part` (note that for the purposes of this, `instruction` delimiters are treated as having length 1, that is `ABC[aslani_ins]DEF[aslani_ins2]G` would put 'D' at index 4 and 'G' at index 8)
+    - the index of the `instruction` delimiter within the `part` (note that for the purposes of this, `instruction` delimiters are treated as having length 0, that is `ABC[aslani_ins]DEF[aslani_ins2]G` would put 'D' at index 3 and 'G' at index 6)
 2. the `data` field name (or index) it is in
 3. a path to the field within the overall ASLAN data structure e.g. `["address", "line1"]`
 4. the overall ASLAN structure
-5. an `instruction tag` containing an enum value that is `END DATA`
+5. an `instruction tag` containing an enum value that is `end_data`
 
-Parser implementations MUST provide a way for application developers to disable the emission of events with `END DATA` `instruction tag`s.
+Parser implementations MUST provide a way for application developers to disable the emission of events with `end_data` `instruction tag`s.
 
 Whitespace including new lines is always preserved - ASLAN supports multiline strings out of the box.
 
@@ -214,18 +214,18 @@ When the parser encounters an `instruction`, it MUST emit an event containing:
 5. the overall ASLAN structure
 6. the `instruction` `<CONTENT>` value
 7. all args in the `instruction`, in order, or an empty array if none exist
-8. the index of the `instruction` delimiter within the `part` (note that for the purposes of this, `instruction` delimiters are treated as having length 1, that is `ABC[aslani_ins]DEF[aslani_ins2]G` would put 'D' at index 4 and 'G' at index 8)
-9. an `instruction tag` containing an enum value that is either `CONTENT` or `END` (this is `CONTENT`) when the instruction is first encountered
+8. the index of the `instruction` delimiter within the `part` (note that for the purposes of this, `instruction` delimiters are treated as having length 0, that is `ABC[aslani_ins]DEF[aslani_ins2]G` would put 'D' at index 3 and 'G' at index 6)
+9. an `instruction tag` containing an enum value that is either `content` or `end` (this is `content`) when the instruction is first encountered
 
-On every subsequent change to the content of the `part` containing the `instruction` (remember that `comment`s are ignored as they are not content), an additional event MUST be emitted as above, with the `CONTENT` `instruction tag`.
+On every subsequent change to the content of the `part` containing the `instruction` (remember that `comment`s are ignored as they are not content), an additional event MUST be emitted as above, with the `content` `instruction tag`.
 
-When the `part` ends, either due to another `part` delimiter or due to the end of the `data` field (both auto-closing and non auto-closing via an `object` or `array` close), an additional event MUST be emitted as above, with the `END` `instruction tag`. This gives an application developer the option to only run an `instruction` at the end of the `part` or on every change.
+When the `part` ends, either due to another `part` delimiter or due to the end of the `data` field (both auto-closing and non auto-closing via an `object` or `array` close), an additional event MUST be emitted as above, with the `end` `instruction tag`. This gives an application developer the option to only run an `instruction` at the end of the `part` or on every change.
 
 Every `part` may have multiple `instruction`s and each `instruction` MUST be run in the order it appears.
 
 ASLAN parser implementations MUST provide API hooks that allow an application developer to listen to `instruction` events.
 
-Parser implementations MUST provide a way for application developers to disable the emission of events with `CONTENT` and `END` `instruction tag`s.
+Parser implementations MUST provide a way for application developers to disable the emission of events with `content` and `end` `instruction tag`s.
 
 `instruction`s apply to the entire `part` in which they appear.
 
