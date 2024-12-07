@@ -2,9 +2,16 @@
   "name": "aslan",
   "version": "0.0.1",
   "description": "Parser for ASLAN",
-  "main": "dist/aslan-parser.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "author": "Jerzy Foss",
+  "license": "See LICENSE.md",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "prepare": "pnpm run build",
     "test": "jest",
     "lint": "eslint . --ext .ts"
   },
