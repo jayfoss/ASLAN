@@ -50,4 +50,18 @@ describe('ASLANParser Stop', () => {
       },
     });
   });
+
+  test('parses simple string with object and stop, strict end, escaped stop', () => {
+    const result = parser.parse(
+      '[asland_hi]Hello [asland_lo]World![aslane_test][aslans][aslane_test][asland_foo][aslano][asland_bar]Baz!',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello ',
+      lo: 'World![aslans]',
+      foo: {
+        bar: 'Baz!',
+      },
+    });
+  });
 });
