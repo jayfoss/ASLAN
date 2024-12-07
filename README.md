@@ -451,7 +451,7 @@ The `stop` delimiter is strictly optional and is designed purely as a safe way t
 
 If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the previously accumulated result MUST be added to the result array and the parser state MUST be reset. The next ASLAN object MUST start being parsed from the first post-`stop` non-`stop` delimiter (this includes `field-scope` delimiters such as `instruction` but in this case the `part` that the `instruction` targets will start from the `instruction` delimiter).
 
-It should be noted that the `go` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior.
+It should be noted that the `go` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior. However, the first `go` delimiter in an ASLAN string (or in a multi-ASLAN `stop` delimited section) that is wrapped in an `escape` obviously won't be escaped since parsing hasn't started so the `escape` is ignored.
 
 #### 15.1 Example `stop` usage
 1. The string `Here is some some valid ASLAN I have created for you: [asland_hi]Hello [asland_lo]World![asland_fi]Example\nThere I successfully generated ASLAN for you.` with `strictEnd` set to `true` is equivalent to:
