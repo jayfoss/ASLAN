@@ -1,11 +1,11 @@
-import { ASLANParser } from "../src/aslan-parser";
+import { ASLANParser } from '../src/aslan-parser';
 
 describe('ASLANParser Stop', () => {
   let parser: ASLANParser;
 
   beforeEach(() => {
     parser = new ASLANParser({
-      strictEnd: true
+      strictEnd: true,
     });
   });
 
@@ -49,7 +49,7 @@ describe('ASLANParser Stop', () => {
 
   test('parses simple string with object and stop, strict end disabled', () => {
     const parser = new ASLANParser({
-      strictEnd: false
+      strictEnd: false,
     });
     const result = parser.parse(
       '[asland_hi]Hello [aslans][asland_lo]World![asland_foo][aslano][asland_bar]Baz!',

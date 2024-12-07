@@ -1,4 +1,8 @@
-import { ASLANEndDataInstruction, ASLANInstruction, ASLANParser } from '../src/aslan-parser';
+import {
+  ASLANEndDataInstruction,
+  ASLANInstruction,
+  ASLANParser,
+} from '../src/aslan-parser';
 import { deepCopy } from '../src/utils';
 
 describe('ASLANParser Instruction', () => {
@@ -32,12 +36,12 @@ describe('ASLANParser Instruction', () => {
     expect(endEvents).toMatchSnapshot('instruction-events-end');
     expect(endDataEvents).toMatchSnapshot('instruction-events-end-data');
     expect(result).toEqual({
-      "_default": null,
-      "styled_text": [
-        "This is bold and red text.",
-        "This is italic and underlined text.",
-        "This is large monospace text."
-      ]
+      _default: null,
+      styled_text: [
+        'This is bold and red text.',
+        'This is italic and underlined text.',
+        'This is large monospace text.',
+      ],
     });
   });
 
@@ -49,10 +53,8 @@ describe('ASLANParser Instruction', () => {
     expect(endEvents).toMatchSnapshot('instruction-events-end');
     expect(endDataEvents).toMatchSnapshot('instruction-events-end-data');
     expect(result).toEqual({
-      "_default": null,
-      "styled_text": [
-        "This is italic and blue text.",
-      ]
+      _default: null,
+      styled_text: ['This is italic and blue text.'],
     });
   });
 
@@ -64,10 +66,8 @@ describe('ASLANParser Instruction', () => {
     expect(endEvents).toMatchSnapshot('instruction-events-end');
     expect(endDataEvents).toMatchSnapshot('instruction-events-end-data');
     expect(result).toEqual({
-      "_default": null,
-      "styled_text": [
-        "This is bold and red text.",
-      ]
+      _default: null,
+      styled_text: ['This is bold and red text.'],
     });
   });
 
@@ -79,15 +79,13 @@ describe('ASLANParser Instruction', () => {
     expect(endEvents).toMatchSnapshot('instruction-events-end');
     expect(endDataEvents).toMatchSnapshot('instruction-events-end-data');
     expect(result).toEqual({
-      "_default": null,
+      _default: null,
       test: [
         {
           next: 'Next item',
-          styled_text: 'This is bold and red text.'
-        }
-      ]
+          styled_text: 'This is bold and red text.',
+        },
+      ],
     });
   });
-
-
 });

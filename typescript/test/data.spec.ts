@@ -20,7 +20,9 @@ describe('ASLANParser Data', () => {
   });
 
   test('parses simple string with leading content', () => {
-    const result = parser.parse('This is still valid.[asland_hi]Hello [asland_lo]World!');
+    const result = parser.parse(
+      'This is still valid.[asland_hi]Hello [asland_lo]World!',
+    );
     expect(result).toEqual({
       _default: 'This is still valid.',
       hi: 'Hello ',
@@ -29,7 +31,9 @@ describe('ASLANParser Data', () => {
   });
 
   test('parses simple string with default append behavior', () => {
-    const result = parser.parse('[asland_hi]Hello [asland_lo]World![asland_hi]Hello');
+    const result = parser.parse(
+      '[asland_hi]Hello [asland_lo]World![asland_hi]Hello',
+    );
     expect(result).toEqual({
       _default: null,
       hi: 'Hello Hello',
@@ -38,7 +42,9 @@ describe('ASLANParser Data', () => {
   });
 
   test('parses simple string with keep first key behavior', () => {
-    const result = parser.parse('[asland_hi:f]Hello [asland_lo]World![asland_hi]Hello');
+    const result = parser.parse(
+      '[asland_hi:f]Hello [asland_lo]World![asland_hi]Hello',
+    );
     expect(result).toEqual({
       _default: null,
       hi: 'Hello ',
@@ -47,7 +53,9 @@ describe('ASLANParser Data', () => {
   });
 
   test('parses simple string with keep last key behavior', () => {
-    const result = parser.parse('[asland_hi:l]Hello [asland_lo]World![asland_hi]Hello');
+    const result = parser.parse(
+      '[asland_hi:l]Hello [asland_lo]World![asland_hi]Hello',
+    );
     expect(result).toEqual({
       _default: null,
       hi: 'Hello',

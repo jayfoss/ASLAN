@@ -52,12 +52,14 @@ describe('ASLANParser Multi ASLAN', () => {
       },
       {
         _default: null,
-      }
+      },
     ]);
   });
 
   test('parses multi ASLAN string with content between stop and go delimiters', () => {
-    const result = parser.parse('[aslang]This is a test[aslans]this should be ignored[aslang]but not this');
+    const result = parser.parse(
+      '[aslang]This is a test[aslans]this should be ignored[aslang]but not this',
+    );
     expect(result).toEqual([
       {
         _default: 'This is a test',

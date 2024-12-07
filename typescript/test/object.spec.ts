@@ -114,7 +114,7 @@ describe('ASLANParser Object', () => {
       _default: null,
       hi: {
         y: 'bar',
-      }
+      },
     });
   });
 
@@ -126,7 +126,7 @@ describe('ASLANParser Object', () => {
       _default: null,
       hi: {
         x: 'foo',
-      }
+      },
     });
   });
 

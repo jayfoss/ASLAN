@@ -1,4 +1,4 @@
-import { ASLANParser } from "../src/aslan-parser";
+import { ASLANParser } from '../src/aslan-parser';
 
 describe('ASLANParser Default Field', () => {
   let parser: ASLANParser;

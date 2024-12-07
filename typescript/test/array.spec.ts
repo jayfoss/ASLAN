@@ -8,7 +8,9 @@ describe('ASLANParser Array', () => {
   });
 
   test('parses simple string with array', () => {
-    const result = parser.parse('[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry');
+    const result = parser.parse(
+      '[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry',
+    );
     expect(result).toEqual({
       _default: null,
       fruits: ['Apple', 'Banana', 'Cherry'],
@@ -72,7 +74,7 @@ describe('ASLANParser Array', () => {
     );
     expect(result).toEqual({
       _default: null,
-      hi: ['bar']
+      hi: ['bar'],
     });
   });
 
@@ -82,7 +84,7 @@ describe('ASLANParser Array', () => {
     );
     expect(result).toEqual({
       _default: null,
-      hi: ['foo']
+      hi: ['foo'],
     });
   });
 
