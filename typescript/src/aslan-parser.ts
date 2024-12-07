@@ -242,6 +242,9 @@ export class ASLANParser {
         [this.parserSettings.defaultFieldName]: false,
       };
       this.stack[0].currentKey = this.parserSettings.defaultFieldName;
+      this.stack[0].innerResult = this.result;
+      this.stack[0].dataInsertionTypes = this.dataInsertionTypes;
+      this.stack[0].dataInsertionLocks = this.dataInsertionLocks;
     }
   }
 
