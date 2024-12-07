@@ -1595,8 +1595,3 @@ export class ASLANParser {
     );
   }
 }
-
-const parser = new ASLANParser();
-// const result = parser.parse(
-//   '[aslani_test:hello:2:9:]hello[aslani_test2]world[asland]test[asland_me]Hi',
-// );
