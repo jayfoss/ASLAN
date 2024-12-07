@@ -397,7 +397,7 @@ Multiple `go` delimiters are allowed in a stream but this creates multi-ASLAN i.
 
 Each time a `go` delimiter is encountered, the current state of the result object MUST be added to the output array and all other parser state MUST be reset.
 
-The `go` delimiter is strictly optional and for a single ASLAN result is unnecessary. However, it may still be useful if the application developer doesn't want LLM preamble to end up in the result object (although the preferred way to handle this is to just ignore the `_default` field application code and explicitly start your first desired field with `[<PREFIX>d]`).
+The `go` delimiter is strictly optional and for a single ASLAN result is unnecessary. However, it may still be useful if the application developer doesn't want LLM preamble to end up in the result object (although the preferred way to handle this is to just ignore the `_default` field in application code and explicitly start your first desired field with `[<PREFIX>d]`).
 
 ASLAN parsers MUST implement the `strictStart` flag and have it default to `false`.
 
