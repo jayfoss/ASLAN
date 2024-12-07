@@ -395,9 +395,9 @@ If the `strictStart` flag is disabled, all content in the stream will be parsed 
 
 Multiple `go` delimiters are allowed in a stream but this creates multi-ASLAN i.e. multiple ASLAN objects will be output from a single stream. This allows for ASLAN to be used in complex outputs such as multi-stage LLM calls with tool calls.
 
-Each time a `go` delimiter is encountered, the current state of the result object MUST be added to the output array and all other parser state MUST be reset.
+Each time a `go` delimiter is encountered, the current state of the result object MUST be added to the output array if it isn't already and all other parser state MUST be reset.
 
-The `go` delimiter is strictly optional and for a single ASLAN result is unnecessary. However, it may still be useful if the application developer doesn't want LLM preamble to end up in the result object (although the preferred way to handle this is to just ignore the `_default` field application code and explicitly start your first desired field with `[<PREFIX>d]`).
+The `go` delimiter is strictly optional and for a single ASLAN result is unnecessary. However, it may still be useful if the application developer doesn't want LLM preamble to end up in the result object (although the preferred way to handle this is to just ignore the `_default` field in application code and explicitly start your first desired field with `[<PREFIX>d]`).
 
 ASLAN parsers MUST implement the `strictStart` flag and have it default to `false`.
 
@@ -440,7 +440,7 @@ ASLAN parsers MUST implement the `strictStart` flag and have it default to `fals
 ]
 ```
 
-Note that an ASLAN parser, whether it has encountered multi-ASLAN or single-ASLAN MUST always output the final result of a parsed stream as an array of 1 or more ASLAN objects. For brevity in this spec, we only show the wrapper array when there are multiple elements.
+Note that an ASLAN parser MUST support both single and multi-ASLAN. All ASLAN parsers MUST provide the option to output either the single latest ASLAN object from the parsing run, or an array of 1 or more ASLAN objects. ASLAN parsers MUST implement a setting which controls the output type for that instance of the parser. Regardless of the multi-ASLAN output setting being implemented, parsers MUST also expose functions to allow application developers to retrieve either the latest or all ASLAN objects parsed from the input.
 
 ### 15. Rules for `stop`s
 `stop` delimiters MUST adhere to the syntax `[<PREFIX>s]`. If the parser has the `strictEnd` flag enabled, it must stop trying to parse content as ASLAN after the `stop` delimiter.
@@ -449,7 +449,7 @@ If the `strictEnd` flag is disabled, all content in the stream will be parsed as
 
 The `stop` delimiter is strictly optional and is designed purely as a safe way to avoid LLM epilogue being included in the result. It is unnecessary to use the `stop` delimiter in conjunction with the `go` delimiter if you are certain there will be no epilogue since the `go` delimiter starts a new ASLAN object by itself.
 
-If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the previously accumulated result MUST be added to the result array and the parser state MUST be reset. The next ASLAN object MUST start being parsed from the first post-`stop` non-`stop` delimiter (this includes `field-scope` delimiters such as `instruction` but in this case the `part` that the `instruction` targets will start from the `instruction` delimiter).
+If an ASLAN parser encounters any non-`stop` ASLAN delimiter after a `stop`, the previously accumulated result MUST be added to the result array if it isn't already and the parser state MUST be reset. The next ASLAN object MUST start being parsed from the first post-`stop` non-`stop` delimiter (this includes `field-scope` delimiters such as `instruction` but in this case the `part` that the `instruction` targets will start from the `instruction` delimiter).
 
 It should be noted that the `go` delimiter, while it will break out of every other scope, won't break out of an `escape` as `escape`s by design have higher priority to maintain consistent, expected behavior. However, the first `go` delimiter in an ASLAN string (or in a multi-ASLAN `stop` delimited section) that is wrapped in an `escape` obviously won't be escaped since parsing hasn't started so the `escape` is ignored.
 
