@@ -157,7 +157,7 @@ type ASLANRegisteredInstruction = {
   partIndex: number;
 };
 
-type ASLANParserStateStack = {
+type ASLANParserStateStackFrame = {
   innerResult: ASLANObject | ASLANArray;
   dataInsertionTypes: { [key: string]: ASLANDataInsertionType };
   dataInsertionLocks: { [key: string]: boolean };
@@ -199,7 +199,7 @@ export class ASLANParser {
   private dataInsertionLocks: { [key: string]: boolean } = {
     _default: false,
   };
-  private stack: ASLANParserStateStack[] = [
+  private stack: ASLANParserStateStackFrame[] = [
     {
       innerResult: this.result,
       dataInsertionTypes: this.dataInsertionTypes,
@@ -221,16 +221,27 @@ export class ASLANParser {
   private currentEscapeDelimiter: string | null = null;
   private parsingLocked: boolean = false;
   private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
+  private multiAslanResults: ASLANObject[] = [];
 
-  constructor(
-    parserSettings: Partial<ASLANParserSettings> = {},
-  ) {
+  constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
     this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
     this.delimiterOpenSubstring = '[' + this.parserSettings.prefix;
     this.stack[0].currentKey = this.parserSettings.defaultFieldName;
     if (this.parserSettings.strictStart) {
       this.parsingLocked = true;
       this.state = ASLANParserState.LOCKED;
+    }
+    if (this.parserSettings.defaultFieldName !== '_default') {
+      this.result = {
+        [this.parserSettings.defaultFieldName]: null,
+      };
+      this.dataInsertionTypes = {
+        [this.parserSettings.defaultFieldName]: ASLANDataInsertionType.DEFAULT,
+      };
+      this.dataInsertionLocks = {
+        [this.parserSettings.defaultFieldName]: false,
+      };
+      this.stack[0].currentKey = this.parserSettings.defaultFieldName;
     }
   }
 
@@ -563,7 +574,7 @@ export class ASLANParser {
       innerResult: this.getLatestResult()[this.getCurrentKey()] as ASLANObject,
       dataInsertionTypes: {},
       dataInsertionLocks: {},
-      currentKey: '_default',
+      currentKey: this.parserSettings.defaultFieldName,
       minArrayIndex: 0,
       voidFields: {},
       alreadySeenDuplicateKeys: {},
