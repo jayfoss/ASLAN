@@ -15,6 +15,10 @@
     "test": "jest",
     "lint": "eslint . --ext .ts"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jayfoss/ASLAN.git"
+  },
   "devDependencies": {
     "@babel/preset-env": "^7.25.8",
     "@babel/preset-typescript": "^7.25.7",
