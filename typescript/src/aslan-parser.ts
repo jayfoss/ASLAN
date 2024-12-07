@@ -13,6 +13,7 @@ type ASLANInstruction = {
   instruction: string;
   args: string[];
   index: number;
+  multiAslanIndex: number;
   tag: 'content' | 'end';
 };
 
@@ -29,6 +30,7 @@ type ASLANEndDataInstruction = {
   fieldName: string | number;
   path: string[];
   structure: ASLANObject | ASLANArray;
+  multiAslanIndex: number;
   tag: 'end_data';
 };
 
@@ -1373,6 +1375,7 @@ export class ASLANParser {
         instruction: instruction.name,
         args: instruction.args,
         index: instruction.index,
+        multiAslanIndex: this.multiAslanResults.length - 1,
       }),
     );
   }
@@ -1400,6 +1403,7 @@ export class ASLANParser {
         fieldName,
         path,
         structure: this.getResult(),
+        multiAslanIndex: this.multiAslanResults.length - 1,
       }),
     );
   }
