@@ -226,6 +226,7 @@ export class ASLANParser {
   private parsingLocked: boolean = false;
   private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
   private multiAslanResults: (ASLANObject | ASLANArray)[] = [];
+  private didStop: boolean = true;
 
   constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
     this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
@@ -274,7 +275,7 @@ export class ASLANParser {
     return this.currentValue;
   }
 
-  private exitInvalidDelimiterIntoDATA(char: string) {
+  private exitDelimiterIntoDATA(char: string) {
     this.currentValue += this.delimiterBuffer + char;
     this.delimiterBuffer = '';
     this.currentDelimiter = null;
@@ -382,16 +383,17 @@ export class ASLANParser {
       this.delimiterBuffer = '';
       this.currentValue = '';
       this.parsingLocked = false;
-      if (this.parserSettings.strictStart) {
+      if (this.parserSettings.strictStart && !this.didStop) {
         this.close();
         this.reset();
         this.multiAslanResults.push(this.stack[0].innerResult);
       }
+      this.didStop = false;
       return;
     }
     //Spec: Go delimiters have no <CONTENT> or args
     //INVALID GO DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   private handleStopDelimiter(char: string) {
@@ -409,12 +411,13 @@ export class ASLANParser {
         this.reset();
         this.multiAslanResults.push(this.stack[0].innerResult);
         this.state = ASLANParserState.START;
+        this.didStop = true;
       }
       return;
     }
     //Spec: Stop delimiters have no <CONTENT> or args
     //INVALID STOP DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   private handleStart(char: string) {
@@ -533,7 +536,7 @@ export class ASLANParser {
     if (char !== ']') {
       //Spec: Reserved delimiters contain no <CONTENT> or args
       //INVALID RESERVED DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     this.delimiterBuffer = '';
     this.state = ASLANParserState.DATA;
@@ -546,7 +549,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Object delimiters have no <CONTENT> or args
@@ -589,7 +592,7 @@ export class ASLANParser {
     }
     //Spec: Object delimiters have no <CONTENT> or args
     //INVALID OBJECT DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   createNewObject() {
@@ -615,12 +618,12 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Instruction delimiters must contain <CONTENT>
       //INVALID INSTRUCTION DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === '_') {
       //Spec: Instruction delimiters must contain <CONTENT>
@@ -632,7 +635,7 @@ export class ASLANParser {
     }
     //Spec: Instruction delimiters must contain <CONTENT>
     //INVALID INSTRUCTION DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleInstructionDelimiterName(char: string) {
@@ -644,7 +647,7 @@ export class ASLANParser {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
         //INVALID INSTRUCTION DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       }
       //Spec: Instructions may have arguments.
       this.state = ASLANParserState.INSTRUCTION_DELIMITER_ARGS;
@@ -656,13 +659,13 @@ export class ASLANParser {
     if (char === '_' && this.currentDelimiter!.content === '') {
       //Spec: Delimiter <CONTENT> may not start with an underscore.
       //INVALID INSTRUCTION DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
         //INVALID INSTRUCTION DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       }
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>]
       //VALID INSTRUCTION DELIMITER
@@ -708,7 +711,7 @@ export class ASLANParser {
     if (!/^[a-zA-Z0-9_]$/.test(char)) {
       //Spec: Delimiter <CONTENT> may only contain alphanumeric characters and underscores.
       //INVALID INSTRUCTION DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     this.currentDelimiter!.content += char;
     this.delimiterBuffer += char;
@@ -782,7 +785,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       const latestResult = this.getLatestResult();
@@ -799,7 +802,7 @@ export class ASLANParser {
       }
       //Spec: Data delimiters must contain <CONTENT> if the current result is not an array.
       //INVALID DATA DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === '_') {
       this.state = ASLANParserState.DATA_DELIMITER_NAME;
@@ -810,7 +813,7 @@ export class ASLANParser {
     }
     //Spec: Data delimiters must be valid of the form [<PREFIX>d_<CONTENT>] or [<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
     //INVALID DATA DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleDataDelimiterName(char: string) {
@@ -822,7 +825,7 @@ export class ASLANParser {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
         //INVALID DATA DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       }
       //Spec: Data may have arguments.
       this.state = ASLANParserState.DATA_DELIMITER_ARGS;
@@ -837,13 +840,13 @@ export class ASLANParser {
     if (char === '_' && this.currentDelimiter!.content === '') {
       //Spec: Delimiter <CONTENT> may not start with an underscore.
       //INVALID DATA DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
         //INVALID DATA DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       }
       //Spec: Data delimiter of the form [<PREFIX>d_<CONTENT>]
       //VALID DATA DELIMITER
@@ -859,7 +862,7 @@ export class ASLANParser {
     if (!/^[a-zA-Z0-9_]$/.test(char)) {
       //Spec: Delimiter <CONTENT> may only contain alphanumeric characters and underscores.
       //INVALID DATA DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     this.currentDelimiter!.content += char;
     this.delimiterBuffer += char;
@@ -912,7 +915,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Array delimiters have no <CONTENT> or args
@@ -955,7 +958,7 @@ export class ASLANParser {
     }
     //Spec: Array delimiters have no <CONTENT> or args
     //INVALID ARRAY DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   createNewArray() {
@@ -981,7 +984,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Void delimiters have no <CONTENT> or args
@@ -994,7 +997,7 @@ export class ASLANParser {
     }
     //Spec: Void delimiters have no <CONTENT> or args
     //INVALID VOID DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleCommentDelimiter(char: string) {
@@ -1003,7 +1006,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Comment delimiters have no <CONTENT> or args
@@ -1015,7 +1018,7 @@ export class ASLANParser {
     }
     //Spec: Comment delimiters have no <CONTENT> or args
     //INVALID COMMENT DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleEscapeDelimiter(char: string) {
@@ -1026,7 +1029,7 @@ export class ASLANParser {
     if (char === ']') {
       //Spec: Escape delimiters must contain <CONTENT>
       //INVALID ESCAPE DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === '_') {
       this.state = ASLANParserState.ESCAPE_DELIMITER_NAME;
@@ -1037,7 +1040,7 @@ export class ASLANParser {
     }
     //Spec: Escape delimiters must be valid of the form [<PREFIX>e_<CONTENT>]
     //INVALID ESCAPE DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleEscapeDelimiterName(char: string) {
@@ -1048,13 +1051,13 @@ export class ASLANParser {
     if (char === '_' && this.currentDelimiter!.content === '') {
       //Spec: Delimiter <CONTENT> may not start with an underscore.
       //INVALID ESCAPE DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
         //INVALID ESCAPE DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       }
       //Spec: Escape delimiter of the form [<PREFIX>e_<CONTENT>]
       //VALID ESCAPE DELIMITER
@@ -1071,7 +1074,7 @@ export class ASLANParser {
         this.storeCurrentValue();
         //Spec: Escape delimiters must be the same for the entire string.
         //INVALID ESCAPE DELIMITER
-        return this.exitInvalidDelimiterIntoDATA(char);
+        return this.exitDelimiterIntoDATA(char);
       } else {
         this.currentEscapeDelimiter = null;
         this.state = ASLANParserState.DATA;
@@ -1083,7 +1086,7 @@ export class ASLANParser {
     if (!/^[a-zA-Z0-9_]$/.test(char)) {
       //Spec: Delimiter <CONTENT> may only contain alphanumeric characters and underscores.
       //INVALID ESCAPE DELIMITER
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     this.currentDelimiter!.content += char;
     this.delimiterBuffer += char;
@@ -1095,7 +1098,7 @@ export class ASLANParser {
       return;
     }
     if (this.currentEscapeDelimiter) {
-      return this.exitInvalidDelimiterIntoDATA(char);
+      return this.exitDelimiterIntoDATA(char);
     }
     if (char === ']') {
       //Spec: Part delimiters have no <CONTENT> or args
@@ -1128,7 +1131,7 @@ export class ASLANParser {
     }
     //Spec: Part delimiters have no <CONTENT> or args
     //INVALID PART DELIMITER
-    this.exitInvalidDelimiterIntoDATA(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleGo(char: string) {
@@ -1137,7 +1140,7 @@ export class ASLANParser {
       this.delimiterBuffer += char;
       return;
     }
-    this.appendToCurrentValue(char);
+    this.exitDelimiterIntoDATA(char);
   }
 
   handleStop(char: string) {
@@ -1558,10 +1561,6 @@ export class ASLANParser {
         registeredInstructions: [],
       },
     ];
-  }
-
-  private storeCurrentStackAsMultiAslanObject() {
-    this.multiAslanResults.push(this.getResult());
   }
 
   private getCurrentKey() {
