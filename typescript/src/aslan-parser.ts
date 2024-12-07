@@ -4,7 +4,7 @@ type ASLANValue = string | ASLANObject | ASLANArray | null;
 type ASLANObject = { [key: string]: ASLANValue };
 type ASLANArray = ASLANValue[];
 
-type ASLANInstruction = {
+export type ASLANInstruction = {
   content: string;
   partIndex: number;
   fieldName: string | number;
@@ -17,7 +17,7 @@ type ASLANInstruction = {
   tag: 'content' | 'end';
 };
 
-type ASLANEndDataInstruction = {
+export type ASLANEndDataInstruction = {
   content: {
     value: string;
     partIndex: number;
@@ -49,7 +49,7 @@ enum ASLANDelimiterType {
 
 type ASLANDuplicateKeyBehavior = 'a' | 'f' | 'l';
 
-type ASLANEventHandler = (
+export type ASLANEventHandler = (
   instruction: ASLANInstruction | ASLANEndDataInstruction,
 ) => void;
 
@@ -90,7 +90,7 @@ enum ASLANParserState {
   LOCKED,
 }
 
-type ASLANParserSettings = {
+export type ASLANParserSettings = {
   prefix: string;
   defaultFieldName: string;
   eventListeners: ASLANEventListenerMap;
@@ -170,10 +170,6 @@ type ASLANParserStateStackFrame = {
   alreadySeenDuplicateKeys: { [key: string]: boolean };
   implicitArrays: { [key: string]: boolean };
   registeredInstructions: ASLANRegisteredInstruction[];
-};
-
-type ASLANEventListener = {
-  [key: string]: ASLANEventHandler;
 };
 
 type ASLANEventListenerMap = {
