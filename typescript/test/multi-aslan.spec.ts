@@ -48,10 +48,10 @@ describe('ASLANParser Multi ASLAN', () => {
     const result = parser.parse('[aslang][aslang]');
     expect(result).toEqual([
       {
-        _default: null,
+        _default: '',
       },
       {
-        _default: null,
+        _default: '',
       },
     ]);
   });

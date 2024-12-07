@@ -3554,6 +3554,54 @@ exports[`ASLANParser Instruction parses simple string with instructions and data
       {
         "instructions": [],
         "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
         "value": undefined,
       },
     ],
@@ -8618,6 +8666,38 @@ exports[`ASLANParser Instruction parses simple string with instructions and data
 
 exports[`ASLANParser Instruction parses simple string with instructions and data with l arg: instruction-events-end-data 1`] = `
 [
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
   {
     "content": [
       {
@@ -14254,6 +14334,70 @@ exports[`ASLANParser Instruction parses simple string with instructions no part:
       {
         "instructions": [],
         "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
         "value": undefined,
       },
     ],
@@ -18860,6 +19004,22 @@ exports[`ASLANParser Instruction parses simple string with instructions: instruc
 
 exports[`ASLANParser Instruction parses simple string with instructions: instruction-events-end-data 1`] = `
 [
+  {
+    "content": [
+      {
+        "instructions": [],
+        "partIndex": 0,
+        "value": "",
+      },
+    ],
+    "fieldName": "_default",
+    "multiAslanIndex": 0,
+    "path": [],
+    "structure": {
+      "_default": "",
+    },
+    "tag": "end_data",
+  },
   {
     "content": [
       {

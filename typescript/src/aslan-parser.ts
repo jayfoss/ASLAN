@@ -191,7 +191,7 @@ const ASLANDefaultParserSettings: ASLANParserSettings = {
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
   private result: ASLANObject = {
-    _default: null,
+    _default: '',
   };
   private dataInsertionTypes: { [key: string]: ASLANDataInsertionType } = {
     _default: ASLANDataInsertionType.DEFAULT,
@@ -234,7 +234,7 @@ export class ASLANParser {
     }
     if (this.parserSettings.defaultFieldName !== '_default') {
       this.result = {
-        [this.parserSettings.defaultFieldName]: null,
+        [this.parserSettings.defaultFieldName]: '',
       };
       this.dataInsertionTypes = {
         [this.parserSettings.defaultFieldName]: ASLANDataInsertionType.DEFAULT,
@@ -1259,6 +1259,7 @@ export class ASLANParser {
         this.getCurrentKey(),
         this.getCurrentPath(),
       );
+      return;
     }
     if (
       this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]
@@ -1283,16 +1284,18 @@ export class ASLANParser {
           index: instruction.index,
         });
       }
-      for (
-        let i = 0;
-        i < this.getLatestResult()[this.getCurrentKey()].length;
-        i++
-      ) {
-        content.push({
-          value: this.getLatestResult()[this.getCurrentKey()][i],
-          partIndex: i,
-          instructions: instructionsByPartIndex[i],
-        });
+      if (Array.isArray(this.getLatestResult()[this.getCurrentKey()])) {
+        for (
+          let i = 0;
+          i < this.getLatestResult()[this.getCurrentKey()].length;
+          i++
+        ) {
+          content.push({
+            value: this.getLatestResult()[this.getCurrentKey()][i],
+            partIndex: i,
+            instructions: instructionsByPartIndex[i],
+          });
+        }
       }
       this.emitEndDataEvent(
         content,
@@ -1495,6 +1498,12 @@ export class ASLANParser {
     } else {
       // Object
       if (this.currentDelimiter?.content) {
+        if (
+          this.parserSettings.defaultFieldName in this.getLatestResult() &&
+          this.getLatestResult()[this.parserSettings.defaultFieldName] === ''
+        ) {
+          this.getLatestResult()[this.parserSettings.defaultFieldName] = null;
+        }
         this.setCurrentKey(this.currentDelimiter.content);
         if (this.getCurrentKey() in this.getLatestResult()) {
           this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[
@@ -1536,7 +1545,7 @@ export class ASLANParser {
 
   reset() {
     this.result = {
-      [this.parserSettings.defaultFieldName]: null,
+      [this.parserSettings.defaultFieldName]: '',
     };
     this.dataInsertionTypes = {
       [this.parserSettings.defaultFieldName]: ASLANDataInsertionType.DEFAULT,

@@ -14,7 +14,7 @@ describe('ASLANParser Go', () => {
       '[asland_hi]Hello [asland_lo]World![asland_foo][aslano][asland_bar]Baz!',
     );
     expect(result).toEqual({
-      _default: null,
+      _default: '',
     });
   });
 
