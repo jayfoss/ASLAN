@@ -24,14 +24,27 @@ describe('ASLANParser Stop', () => {
   });
 
   test('parses simple string with object and stop, strict end', () => {
+    const parser = new ASLANParser({
+      strictEnd: true,
+      multiAslanOutput: true,
+    });
     const result = parser.parse(
       '[asland_hi]Hello [asland_lo]World![aslans][asland_foo][aslano][asland_bar]Baz!',
     );
-    expect(result).toEqual({
-      _default: null,
-      hi: 'Hello ',
-      lo: 'World!',
-    });
+
+    expect(result).toEqual([
+      {
+        _default: null,
+        hi: 'Hello ',
+        lo: 'World!',
+      },
+      {
+        _default: null,
+        foo: {
+          bar: 'Baz!',
+        },
+      },
+    ]);
   });
 
   test('parses simple string with object and stop, strict end disabled', () => {

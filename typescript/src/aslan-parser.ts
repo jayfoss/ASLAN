@@ -99,6 +99,7 @@ type ASLANParserSettings = {
     end: boolean;
     endData: boolean;
   };
+  multiAslanOutput: boolean;
 };
 
 enum ASLANDataInsertionType {
@@ -186,6 +187,7 @@ const ASLANDefaultParserSettings: ASLANParserSettings = {
   strictStart: false,
   strictEnd: false,
   emittableEvents: { content: true, end: true, endData: true },
+  multiAslanOutput: false,
 };
 
 export class ASLANParser {
@@ -221,7 +223,7 @@ export class ASLANParser {
   private currentEscapeDelimiter: string | null = null;
   private parsingLocked: boolean = false;
   private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
-  private multiAslanResults: ASLANObject[] = [];
+  private multiAslanResults: (ASLANObject | ASLANArray)[] = [];
 
   constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
     this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
@@ -246,13 +248,17 @@ export class ASLANParser {
       this.stack[0].dataInsertionTypes = this.dataInsertionTypes;
       this.stack[0].dataInsertionLocks = this.dataInsertionLocks;
     }
+    this.multiAslanResults.push(this.stack[0].innerResult);
   }
 
-  parse(input: string): ASLANObject {
+  parse(input: string): ASLANObject | (ASLANObject | ASLANArray)[] {
     for (let char of input) {
       this.handleNextChar(char);
     }
     this.close();
+    if (this.parserSettings.multiAslanOutput) {
+      return this.multiAslanResults;
+    }
     return this.stack[0].innerResult as ASLANObject;
   }
 
@@ -374,6 +380,11 @@ export class ASLANParser {
       this.delimiterBuffer = '';
       this.currentValue = '';
       this.parsingLocked = false;
+      if (this.parserSettings.strictStart) {
+        this.close();
+        this.reset();
+        this.multiAslanResults.push(this.stack[0].innerResult);
+      }
       return;
     }
     //Spec: Go delimiters have no <CONTENT> or args
@@ -389,7 +400,13 @@ export class ASLANParser {
       this.delimiterBuffer = '';
       this.currentValue = '';
       if (this.parserSettings.strictEnd) {
-        this.parsingLocked = true;
+        if (this.parserSettings.strictStart) {
+          this.parsingLocked = true;
+        }
+        this.close();
+        this.reset();
+        this.multiAslanResults.push(this.stack[0].innerResult);
+        this.state = ASLANParserState.START;
       }
       return;
     }
@@ -426,7 +443,11 @@ export class ASLANParser {
   }
 
   private handleDelimiter(char: string) {
-    if (this.parsingLocked && char !== 'g') {
+    if (
+      this.parsingLocked &&
+      char !== 'g' &&
+      !this.parserSettings.strictStart
+    ) {
       this.state = ASLANParserState.LOCKED;
       return;
     }
@@ -1504,6 +1525,39 @@ export class ASLANParser {
 
   getResult() {
     return this.stack[0].innerResult;
+  }
+
+  getResults() {
+    return this.multiAslanResults;
+  }
+
+  reset() {
+    this.result = {
+      [this.parserSettings.defaultFieldName]: null,
+    };
+    this.dataInsertionTypes = {
+      [this.parserSettings.defaultFieldName]: ASLANDataInsertionType.DEFAULT,
+    };
+    this.dataInsertionLocks = {
+      [this.parserSettings.defaultFieldName]: false,
+    };
+    this.stack = [
+      {
+        innerResult: this.result,
+        dataInsertionTypes: {},
+        dataInsertionLocks: {},
+        currentKey: this.parserSettings.defaultFieldName,
+        minArrayIndex: 0,
+        voidFields: {},
+        alreadySeenDuplicateKeys: {},
+        implicitArrays: {},
+        registeredInstructions: [],
+      },
+    ];
+  }
+
+  private storeCurrentStackAsMultiAslanObject() {
+    this.multiAslanResults.push(this.getResult());
   }
 
   private getCurrentKey() {
