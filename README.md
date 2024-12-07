@@ -440,7 +440,7 @@ ASLAN parsers MUST implement the `strictStart` flag and have it default to `fals
 ]
 ```
 
-Note that an ASLAN parser, whether it has encountered multi-ASLAN or single-ASLAN MUST always output the final result of a parsed stream as an array of 1 or more ASLAN objects. For brevity in this spec, we only show the wrapper array when there are multiple elements.
+Note that an ASLAN parser MUST support both single and multi-ASLAN. All ASLAN parsers MUST provide the option to output either the single latest ASLAN object from the parsing run, or an array of 1 or more ASLAN objects. ASLAN parsers MUST implement a setting which controls the output type for that instance of the parser. Regardless of the multi-ASLAN output setting being implemented, parsers MUST also expose functions to allow application developers to retrieve either the latest or all ASLAN objects parsed from the input.
 
 ### 15. Rules for `stop`s
 `stop` delimiters MUST adhere to the syntax `[<PREFIX>s]`. If the parser has the `strictEnd` flag enabled, it must stop trying to parse content as ASLAN after the `stop` delimiter.
