@@ -47,7 +47,9 @@ enum ASLANDelimiterType {
 
 type ASLANDuplicateKeyBehavior = 'a' | 'f' | 'l';
 
-type ASLANEventHandler = (instruction: ASLANInstruction | ASLANEndDataInstruction) => void;
+type ASLANEventHandler = (
+  instruction: ASLANInstruction | ASLANEndDataInstruction,
+) => void;
 
 type ASLANDelimiterData = {
   prefix: string | null;
@@ -83,6 +85,7 @@ enum ASLANParserState {
   DATA,
   GO,
   STOP,
+  LOCKED,
 }
 
 type ASLANParserSettings = {
@@ -176,6 +179,15 @@ type ASLANEventListenerMap = {
   endData: ((instruction: ASLANEndDataInstruction) => void)[];
 };
 
+const ASLANDefaultParserSettings: ASLANParserSettings = {
+  prefix: 'aslan',
+  defaultFieldName: '_default',
+  eventListeners: { content: [], end: [], endData: [] },
+  strictStart: false,
+  strictEnd: false,
+  emittableEvents: { content: true, end: true, endData: true },
+};
+
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
   private result: ASLANObject = {
@@ -207,23 +219,19 @@ export class ASLANParser {
   private recentDelimiters: RecentItems<ASLANDelimiterType> =
     new RecentItems<ASLANDelimiterType>();
   private currentEscapeDelimiter: string | null = null;
+  private parsingLocked: boolean = false;
+  private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
 
   constructor(
-    public readonly parserSettings: ASLANParserSettings = {
-      prefix: 'aslan',
-      defaultFieldName: '_default',
-      eventListeners: {
-        content: [],
-        end: [],
-        endData: [],
-      },
-      strictStart: true,
-      strictEnd: true,
-      emittableEvents: { content: true, end: true, endData: true },
-    },
+    parserSettings: Partial<ASLANParserSettings> = {},
   ) {
-    this.delimiterOpenSubstring = '[' + parserSettings.prefix;
-    this.stack[0].currentKey = parserSettings.defaultFieldName;
+    this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
+    this.delimiterOpenSubstring = '[' + this.parserSettings.prefix;
+    this.stack[0].currentKey = this.parserSettings.defaultFieldName;
+    if (this.parserSettings.strictStart) {
+      this.parsingLocked = true;
+      this.state = ASLANParserState.LOCKED;
+    }
   }
 
   parse(input: string): ASLANObject {
@@ -331,6 +339,16 @@ export class ASLANParser {
       case ASLANParserState.DATA:
         this.handleData(char);
         break;
+      case ASLANParserState.LOCKED:
+        this.handleLocked(char);
+        break;
+    }
+  }
+
+  private handleLocked(char: string) {
+    if (char === '[') {
+      this.state = ASLANParserState.MAYBE_DELIMITER;
+      this.delimiterBuffer = char;
     }
   }
 
@@ -341,6 +359,7 @@ export class ASLANParser {
       this.state = ASLANParserState.GO;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      this.parsingLocked = false;
       return;
     }
     //Spec: Go delimiters have no <CONTENT> or args
@@ -355,6 +374,9 @@ export class ASLANParser {
       this.state = ASLANParserState.STOP;
       this.delimiterBuffer = '';
       this.currentValue = '';
+      if (this.parserSettings.strictEnd) {
+        this.parsingLocked = true;
+      }
       return;
     }
     //Spec: Stop delimiters have no <CONTENT> or args
@@ -390,6 +412,10 @@ export class ASLANParser {
   }
 
   private handleDelimiter(char: string) {
+    if (this.parsingLocked && char !== 'g') {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     this.currentDelimiter = {
       prefix: this.parserSettings.prefix,
       suffix: null,
@@ -463,6 +489,10 @@ export class ASLANParser {
   }
 
   handleReservedDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char !== ']') {
       //Spec: Reserved delimiters contain no <CONTENT> or args
       //INVALID RESERVED DELIMITER
@@ -474,6 +504,10 @@ export class ASLANParser {
   }
 
   handleObjectDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -539,6 +573,10 @@ export class ASLANParser {
   }
 
   handleInstructionDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -561,6 +599,10 @@ export class ASLANParser {
   }
 
   handleInstructionDelimiterName(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentDelimiter!.content !== '' && char === ':') {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
@@ -636,6 +678,10 @@ export class ASLANParser {
   }
 
   handleInstructionDelimiterArgs(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === ']') {
       //Spec: Instruction delimiter of the form [<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID INSTRUCTION DELIMITER
@@ -694,6 +740,10 @@ export class ASLANParser {
   }
 
   handleDataDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -727,6 +777,10 @@ export class ASLANParser {
   }
 
   handleDataDelimiterName(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentDelimiter!.content !== '' && char === ':') {
       if (this.currentDelimiter!.content?.endsWith('_')) {
         //Spec: Delimiter <CONTENT> may not end with an underscore.
@@ -775,6 +829,10 @@ export class ASLANParser {
   }
 
   handleDataDelimiterArgs(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === ']') {
       //Spec: Data delimiter of the form [<PREFIX>d_<CONTENT>:<ARG0>:<ARG1>:<ARG2>:...]
       //VALID DATA DELIMITER
@@ -812,6 +870,10 @@ export class ASLANParser {
   }
 
   handleArrayDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -877,6 +939,10 @@ export class ASLANParser {
   }
 
   handleVoidDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -895,6 +961,10 @@ export class ASLANParser {
   }
 
   handleCommentDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -912,6 +982,10 @@ export class ASLANParser {
   }
 
   handleEscapeDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === ']') {
       //Spec: Escape delimiters must contain <CONTENT>
       //INVALID ESCAPE DELIMITER
@@ -930,6 +1004,10 @@ export class ASLANParser {
   }
 
   handleEscapeDelimiterName(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '_' && this.currentDelimiter!.content === '') {
       //Spec: Delimiter <CONTENT> may not start with an underscore.
       //INVALID ESCAPE DELIMITER
@@ -975,6 +1053,10 @@ export class ASLANParser {
   }
 
   handlePartDelimiter(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (this.currentEscapeDelimiter) {
       return this.exitInvalidDelimiterIntoDATA(char);
     }
@@ -1022,6 +1104,10 @@ export class ASLANParser {
   }
 
   handleStop(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1031,6 +1117,10 @@ export class ASLANParser {
   }
 
   handleObject(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1040,6 +1130,10 @@ export class ASLANParser {
   }
 
   handleArray(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1049,6 +1143,10 @@ export class ASLANParser {
   }
 
   handleComment(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1056,6 +1154,10 @@ export class ASLANParser {
   }
 
   handleEscape(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1068,6 +1170,10 @@ export class ASLANParser {
   }
 
   handleData(char: string) {
+    if (this.parsingLocked) {
+      this.state = ASLANParserState.LOCKED;
+      return;
+    }
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1104,23 +1210,33 @@ export class ASLANParser {
       return;
     }
     if (typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
-      const content = [{
-        value: this.getLatestResult()[this.getCurrentKey()],
-        partIndex: 0,
-        instructions: this.stack[this.stack.length - 1].registeredInstructions,
-      }];
-      this.emitEndDataEvent(content, this.getCurrentKey(), this.getCurrentPath());
+      const content = [
+        {
+          value: this.getLatestResult()[this.getCurrentKey()],
+          partIndex: 0,
+          instructions:
+            this.stack[this.stack.length - 1].registeredInstructions,
+        },
+      ];
+      this.emitEndDataEvent(
+        content,
+        this.getCurrentKey(),
+        this.getCurrentPath(),
+      );
     }
     if (
       this.stack[this.stack.length - 1].implicitArrays[this.getCurrentKey()]
     ) {
       const currentStackFrame = this.stack[this.stack.length - 1];
       const content = [];
-      const instructionsByPartIndex: Record<number, {
-        name: string;
-        args: string[];
-        index: number;
-      }[]> = {};
+      const instructionsByPartIndex: Record<
+        number,
+        {
+          name: string;
+          args: string[];
+          index: number;
+        }[]
+      > = {};
       for (const instruction of currentStackFrame.registeredInstructions) {
         if (!(instruction.partIndex in instructionsByPartIndex)) {
           instructionsByPartIndex[instruction.partIndex] = [];
@@ -1131,14 +1247,22 @@ export class ASLANParser {
           index: instruction.index,
         });
       }
-      for (let i = 0; i < this.getLatestResult()[this.getCurrentKey()].length; i++) {
+      for (
+        let i = 0;
+        i < this.getLatestResult()[this.getCurrentKey()].length;
+        i++
+      ) {
         content.push({
           value: this.getLatestResult()[this.getCurrentKey()][i],
           partIndex: i,
           instructions: instructionsByPartIndex[i],
         });
       }
-      this.emitEndDataEvent(content, this.getCurrentKey(), this.getCurrentPath());
+      this.emitEndDataEvent(
+        content,
+        this.getCurrentKey(),
+        this.getCurrentPath(),
+      );
     }
   }
 
