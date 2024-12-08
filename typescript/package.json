@@ -1,6 +1,6 @@
 {
   "name": "aslang",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Parser for ASLAN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
