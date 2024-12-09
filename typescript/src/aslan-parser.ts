@@ -267,7 +267,7 @@ export class ASLANParser {
     }
   }
 
-  getCurrentValue() {
+  private getCurrentValue() {
     return this.currentValue;
   }
 
@@ -524,7 +524,7 @@ export class ASLANParser {
     }
   }
 
-  handleReservedDelimiter(char: string) {
+  private handleReservedDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -539,7 +539,7 @@ export class ASLANParser {
     this.currentValue = '';
   }
 
-  handleObjectDelimiter(char: string) {
+  private handleObjectDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -591,7 +591,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  createNewObject() {
+  private createNewObject() {
     this.currentValue = '';
     this.getLatestResult()[this.getCurrentKey()] = {};
 
@@ -608,7 +608,7 @@ export class ASLANParser {
     });
   }
 
-  handleInstructionDelimiter(char: string) {
+  private handleInstructionDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -634,7 +634,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleInstructionDelimiterName(char: string) {
+  private handleInstructionDelimiterName(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -713,7 +713,7 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  handleInstructionDelimiterArgs(char: string) {
+  private handleInstructionDelimiterArgs(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -771,11 +771,11 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  registerInstruction(instruction: ASLANRegisteredInstruction) {
+  private registerInstruction(instruction: ASLANRegisteredInstruction) {
     this.stack[this.stack.length - 1].registeredInstructions.push(instruction);
   }
 
-  handleDataDelimiter(char: string) {
+  private handleDataDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -812,7 +812,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleDataDelimiterName(char: string) {
+  private handleDataDelimiterName(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -864,7 +864,7 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  handleDataDelimiterArgs(char: string) {
+  private handleDataDelimiterArgs(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -905,7 +905,7 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  handleArrayDelimiter(char: string) {
+  private handleArrayDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -957,7 +957,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  createNewArray() {
+  private createNewArray() {
     this.currentValue = '';
     this.getLatestResult()[this.getCurrentKey()] = [];
 
@@ -974,7 +974,7 @@ export class ASLANParser {
     });
   }
 
-  handleVoidDelimiter(char: string) {
+  private handleVoidDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -996,7 +996,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleCommentDelimiter(char: string) {
+  private handleCommentDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1017,7 +1017,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleEscapeDelimiter(char: string) {
+  private handleEscapeDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1039,7 +1039,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleEscapeDelimiterName(char: string) {
+  private handleEscapeDelimiterName(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1088,7 +1088,7 @@ export class ASLANParser {
     this.delimiterBuffer += char;
   }
 
-  handlePartDelimiter(char: string) {
+  private handlePartDelimiter(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1130,7 +1130,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleGo(char: string) {
+  private handleGo(char: string) {
     if (char === '[') {
       this.state = ASLANParserState.MAYBE_DELIMITER;
       this.delimiterBuffer += char;
@@ -1139,7 +1139,7 @@ export class ASLANParser {
     this.exitDelimiterIntoDATA(char);
   }
 
-  handleStop(char: string) {
+  private handleStop(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1152,7 +1152,7 @@ export class ASLANParser {
     this.appendToCurrentValue(char);
   }
 
-  handleObject(char: string) {
+  private handleObject(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1165,7 +1165,7 @@ export class ASLANParser {
     this.appendToCurrentValue(char);
   }
 
-  handleArray(char: string) {
+  private handleArray(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1178,7 +1178,7 @@ export class ASLANParser {
     this.appendToCurrentValue(char);
   }
 
-  handleComment(char: string) {
+  private handleComment(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1189,7 +1189,7 @@ export class ASLANParser {
     }
   }
 
-  handleEscape(char: string) {
+  private handleEscape(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
@@ -1205,7 +1205,7 @@ export class ASLANParser {
     this.currentValue = '';
   }
 
-  handleData(char: string) {
+  private handleData(char: string) {
     if (this.parsingLocked) {
       this.state = ASLANParserState.LOCKED;
       return;
