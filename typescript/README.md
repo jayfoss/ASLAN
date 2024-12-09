@@ -23,7 +23,7 @@ console.log(result);
 ```
 
 will output
-```
+```typescript
 {
   _default: null,
   hi: 'Hello ',
@@ -45,6 +45,7 @@ myStream.on('data', (data: string) => {
 
 myStream.on('end', () => {
   parser.close(); //Close the parser. Important to finalize the parsing process otherwise the result will be incomplete.
-  console.log(parser.getResult()); //Will print the final JS representation of the parsed ASLAN string
+  console.log(parser.getResult()); //Will print the final JS representation of the parsed ASLAN string (or the latest ASLAN object when using multi-ASLAN strings)
+  console.log(parser.getResults()); //Will print the final JS representation of the parsed ASLAN string, as a multi-ASLAN array
 });
 ```
