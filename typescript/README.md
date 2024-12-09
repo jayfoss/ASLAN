@@ -37,13 +37,13 @@ import { ASLANParser } from 'aslang';
 
 const parser = new ASLANParser();
 
-parser.on('data', (data: string) => {
+myStream.on('data', (data: string) => {
   parser.parseNext(data);
 
   console.log(parser.getResult()); //Will print the current JS representation of the parsed ASLAN string
 });
 
-parser.on('end', () => {
+myStream.on('end', () => {
   parser.close(); //Close the parser. Important to finalize the parsing process otherwise the result will be incomplete.
   console.log(parser.getResult()); //Will print the final JS representation of the parsed ASLAN string
 });
