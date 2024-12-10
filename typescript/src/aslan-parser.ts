@@ -102,6 +102,7 @@ export type ASLANParserSettings = {
     endData: boolean;
   };
   multiAslanOutput: boolean;
+  collapseObjectStartWhitespace: boolean;
 };
 
 enum ASLANDataInsertionType {
@@ -186,6 +187,7 @@ const ASLANDefaultParserSettings: ASLANParserSettings = {
   strictEnd: false,
   emittableEvents: { content: true, end: true, endData: true },
   multiAslanOutput: false,
+  collapseObjectStartWhitespace: true,
 };
 
 export class ASLANParser {
@@ -555,7 +557,7 @@ export class ASLANParser {
       const secondMostRecentMaterialDelimiter =
         this.get2ndMostRecentMaterialDelimiter();
       if (
-        this.getLatestResult()[this.getCurrentKey()] ||
+        this.getObjectSafeLatestResult() ||
         secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
       ) {
         if (
@@ -589,6 +591,17 @@ export class ASLANParser {
     //Spec: Object delimiters have no <CONTENT> or args
     //INVALID OBJECT DELIMITER
     this.exitDelimiterIntoDATA(char);
+  }
+
+  private getObjectSafeLatestResult() {
+    const latestResult = this.getLatestResult()[this.getCurrentKey()];
+    if (typeof latestResult === 'string') {
+      if (this.parserSettings.collapseObjectStartWhitespace) {
+        return latestResult.trim();
+      }
+      return latestResult;
+    }
+    return latestResult;
   }
 
   private createNewObject() {
@@ -921,7 +934,7 @@ export class ASLANParser {
       const secondMostRecentMaterialDelimiter =
         this.get2ndMostRecentMaterialDelimiter();
       if (
-        this.getLatestResult()[this.getCurrentKey()] ||
+        this.getObjectSafeLatestResult() ||
         secondMostRecentMaterialDelimiter !== ASLANDelimiterType.DATA
       ) {
         if (

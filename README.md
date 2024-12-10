@@ -168,6 +168,10 @@ Each closing `object` delimiter will shift the parser into the parent block scop
 
 Every `data` delimiter inside an `object` block will create a field in that `object` with the key name being the `<CONTENT>` of the `data` delimiter.
 
+ASLAN parsers MUST implement the `collapseObjectStartWhitespace` option which controls whether whitespace is significant when determining whether to open or close an `object` block. When set to `false`, an `object` delimiter will be treated as closing if the current `data` field is not empty, which can lead to unexpected behavior when an LLM outputs extra whitespace between delimiters. When set to `true`, an `object` delimiter will be treated as closing only if the current `data` field has non-whitespace content.
+
+It is RECOMMENDED that the default value for `collapseObjectStartWhitespace` be `true`.
+
 #### 7.1 Example `object` usage
 1. The string `[asland_hi]Hello [asland_lo]World![asland_foo][aslano][asland_bar]Baz!` and `[asland_hi]Hello [asland_lo]World![asland_foo][aslanc]This is a comment[aslano][asland_bar]Baz!` are equivalent to the JSON:
 
@@ -276,6 +280,8 @@ is equivalent to the JSON:
 Each closing `array` delimiter will shift the parser into the parent block scope, unless the parser is already in the root block scope or in an `object` block, in which case all extraneous `array` delimiters will be ignored.
 
 Every `data` delimiter inside an `array` block will create a field in index in the `array` with the index being the `<CONTENT>` of the `data` delimiter if it exists and is a valid integer, or the next available index if not.
+
+All opening `array` delimiters are affected by the `collapseObjectStartWhitespace` option, which behaves identically to how it works for opening `object` delimiters.
 
 #### 9.1 Example `array` usage
 1. The string `[asland_fruits][aslana][asland]Apple[asland]Banana[asland]Cherry` is equivalent to the JSON:
