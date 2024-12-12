@@ -34,4 +34,19 @@ describe('ASLANParser Part', () => {
       ],
     });
   });
+
+  test('parses simple string with parts & text before first part', () => {
+    const result = parser.parse(
+      '[asland_formatted_text]This is some preamble.[aslanp]This is the first part.[aslanp]This is the second part.[aslanp]This is the third part.',
+    );
+    expect(result).toEqual({
+      _default: null,
+      formatted_text: [
+        'This is some preamble.',
+        'This is the first part.',
+        'This is the second part.',
+        'This is the third part.',
+      ],
+    });
+  });
 });

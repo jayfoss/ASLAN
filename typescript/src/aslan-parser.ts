@@ -1113,7 +1113,7 @@ export class ASLANParser {
       //Spec: Part delimiters have no <CONTENT> or args
       //VALID PART DELIMITER
       if (!this.dataInsertionLocks[this.getCurrentKey()]) {
-        if (!(this.getCurrentKey() in this.getLatestResult())) {
+        if (!this.getLatestResult()[this.getCurrentKey()]) {
           this.stack[this.stack.length - 1].implicitArrays[
             this.getCurrentKey()
           ] = true;
@@ -1127,6 +1127,7 @@ export class ASLANParser {
           this.getLatestResult()[this.getCurrentKey()] = [
             this.getLatestResult()[this.getCurrentKey()],
           ];
+          this.getLatestResult()[this.getCurrentKey()].push('');
         } else {
           this.emitEndEventsIfRequired();
           this.getLatestResult()[this.getCurrentKey()].push('');
