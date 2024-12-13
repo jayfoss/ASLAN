@@ -180,16 +180,18 @@ type ASLANEventListenerMap = {
   endData: ((instruction: ASLANEndDataInstruction) => void)[];
 };
 
-const ASLANDefaultParserSettings: ASLANParserSettings = {
-  prefix: 'aslan',
-  defaultFieldName: '_default',
-  eventListeners: { content: [], end: [], endData: [] },
-  strictStart: false,
-  strictEnd: false,
-  emittableEvents: { content: true, end: true, endData: true },
-  multiAslanOutput: false,
-  collapseObjectStartWhitespace: true,
-};
+function createDefaultParserSettings(): ASLANParserSettings {
+  return {
+    prefix: 'aslan',
+    defaultFieldName: '_default',
+    eventListeners: { content: [], end: [], endData: [] },
+    strictStart: false,
+    strictEnd: false,
+    emittableEvents: { content: true, end: true, endData: true },
+    multiAslanOutput: false,
+    collapseObjectStartWhitespace: true,
+  };
+}
 
 export class ASLANParser {
   private state: ASLANParserState = ASLANParserState.START;
@@ -223,13 +225,13 @@ export class ASLANParser {
     new RecentItems<ASLANDelimiterType>();
   private currentEscapeDelimiter: string | null = null;
   private parsingLocked: boolean = false;
-  private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
+  private parserSettings: ASLANParserSettings;
   private multiAslanResults: (ASLANObject | ASLANArray)[] = [];
   private didStop: boolean = true;
   private listenerIdempotencyKeys: { [key: string]: ASLANEventHandler } = {};
 
   constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
-    this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
+    this.parserSettings = { ...createDefaultParserSettings(), ...parserSettings };
     this.delimiterOpenSubstring = '[' + this.parserSettings.prefix;
     this.stack[0].currentKey = this.parserSettings.defaultFieldName;
     if (this.parserSettings.strictStart) {
