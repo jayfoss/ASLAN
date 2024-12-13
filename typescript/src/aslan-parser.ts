@@ -1,4 +1,5 @@
 import { RecentItems } from './recent-items';
+import { generateRandomIdempotencyKey } from './utils';
 
 type ASLANValue = string | ASLANObject | ASLANArray | null;
 type ASLANObject = { [key: string]: ASLANValue };
@@ -225,6 +226,7 @@ export class ASLANParser {
   private parserSettings: ASLANParserSettings = ASLANDefaultParserSettings;
   private multiAslanResults: (ASLANObject | ASLANArray)[] = [];
   private didStop: boolean = true;
+  private listenerIdempotencyKeys: { [key: string]: ASLANEventHandler } = {};
 
   constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
     this.parserSettings = { ...ASLANDefaultParserSettings, ...parserSettings };
@@ -1236,9 +1238,39 @@ export class ASLANParser {
   addEventListener(
     event: 'content' | 'end' | 'end_data',
     callback: ASLANEventHandler,
+    idempotencyKey: string = generateRandomIdempotencyKey()
   ) {
+    if (this.listenerIdempotencyKeys[idempotencyKey]) {
+      return callback;
+    }
+    this.listenerIdempotencyKeys[idempotencyKey] = callback;
     const eventName = event === 'end_data' ? 'endData' : event;
     this.parserSettings.eventListeners[eventName].push(callback);
+    return callback;
+  }
+
+  removeEventListener(
+    event: 'content' | 'end' | 'end_data',
+    callback: ASLANEventHandler,
+  ) {
+    const eventName = event === 'end_data' ? 'endData' : event;
+    (this.parserSettings.eventListeners[eventName] as any) = this.parserSettings.eventListeners[eventName].filter(
+      (listener) => listener !== callback,
+    );
+    Object.entries(this.listenerIdempotencyKeys).forEach(([key, value]) => {
+      if (value === callback) {
+        delete this.listenerIdempotencyKeys[key];
+      }
+    });
+  }
+  
+  clearEventListeners() {
+    this.listenerIdempotencyKeys = {};
+    this.parserSettings.eventListeners = {
+      content: [],
+      end: [],
+      endData: [],
+    };
   }
 
   private emitEndEventsIfRequired() {

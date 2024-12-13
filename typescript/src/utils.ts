@@ -48,3 +48,7 @@ export function deepCopy<T>(source: T): T {
 
   return result as T;
 }
+
+export function generateRandomIdempotencyKey() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
