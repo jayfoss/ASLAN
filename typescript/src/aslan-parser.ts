@@ -445,8 +445,7 @@ export class ASLANParser {
       }
       return;
     }
-    this.state = ASLANParserState.DATA;
-    this.currentValue += char;
+    this.exitDelimiterIntoDATA(char);
   }
 
   private handleDelimiter(char: string) {
@@ -521,8 +520,7 @@ export class ASLANParser {
           this.delimiterBuffer += char;
           return;
         }
-        this.state = ASLANParserState.DATA;
-        this.currentValue += char;
+        this.exitDelimiterIntoDATA(char);
         break;
     }
     if (this.currentDelimiter?.suffix !== null) {
