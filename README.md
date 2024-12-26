@@ -106,6 +106,8 @@ The `data` delimiter has a single extension which species how duplicate instance
 
 The duplicate behavior definition MUST be applied to the first duplicate `data` delimiter in a block scope. If there are multiple duplicate behavior definitions for the same key in a block, all after the first are ignored.
 
+ASLAN parsers MUST provide a way for application developers to specify an `appendSeparator` which is used to join values in the `append` mode.
+
 If the current `data` block scope has a string value, when the `data` block scope ends, either due to another `data` delimiter or due to the end of the `data` field (both auto-closing and non auto-closing via an `object` or `array` close), an event MUST be emitted as below:
 1. an array containing objects for every string `part` where each object contains:
   - the value of the string `part` (this does not include any `instruction` delimiters)

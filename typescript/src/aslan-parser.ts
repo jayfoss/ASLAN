@@ -104,6 +104,7 @@ export type ASLANParserSettings = {
   };
   multiAslanOutput: boolean;
   collapseObjectStartWhitespace: boolean;
+  appendSeparator: string;
 };
 
 enum ASLANDataInsertionType {
@@ -190,6 +191,7 @@ function createDefaultParserSettings(): ASLANParserSettings {
     emittableEvents: { content: true, end: true, endData: true },
     multiAslanOutput: false,
     collapseObjectStartWhitespace: true,
+    appendSeparator: '',
   };
 }
 
@@ -231,7 +233,10 @@ export class ASLANParser {
   private listenerIdempotencyKeys: { [key: string]: ASLANEventHandler } = {};
 
   constructor(parserSettings: Partial<ASLANParserSettings> = {}) {
-    this.parserSettings = { ...createDefaultParserSettings(), ...parserSettings };
+    this.parserSettings = {
+      ...createDefaultParserSettings(),
+      ...parserSettings,
+    };
     this.delimiterOpenSubstring = '[' + this.parserSettings.prefix;
     this.stack[0].currentKey = this.parserSettings.defaultFieldName;
     if (this.parserSettings.strictStart) {
@@ -866,8 +871,18 @@ export class ASLANParser {
       this.emitEndDataEventsIfRequired();
       this.nextKey();
       this.delimiterBuffer = '';
-      this.currentValue = '';
       this.setDataInsertionType(ASLANDataInsertionType.DEFAULT);
+      if (
+        this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[
+          this.getCurrentKey()
+        ] &&
+        this.getLatestResult()[this.getCurrentKey()] &&
+        typeof this.getLatestResult()[this.getCurrentKey()] !== 'object'
+      ) {
+        this.currentValue = this.parserSettings.appendSeparator;
+        this.storeCurrentValue();
+      }
+      this.currentValue = '';
       return;
     }
     if (!/^[a-zA-Z0-9_]$/.test(char)) {
@@ -889,7 +904,6 @@ export class ASLANParser {
       //VALID DATA DELIMITER
       this.state = ASLANParserState.DATA;
       this.delimiterBuffer = '';
-      this.currentValue = '';
       const arg = this.currentDelimiter?.args[0] as ASLANDuplicateKeyBehavior;
       switch (arg) {
         case 'a':
@@ -907,6 +921,22 @@ export class ASLANParser {
       }
       this.emitEndEventsIfRequired();
       this.emitEndDataEventsIfRequired();
+      if (
+        this.stack[this.stack.length - 1].alreadySeenDuplicateKeys[
+          this.getCurrentKey()
+        ] &&
+        (this.stack[this.stack.length - 1].dataInsertionTypes[
+          this.getCurrentKey()
+        ] === ASLANDataInsertionType.APPEND ||
+          this.stack[this.stack.length - 1].dataInsertionTypes[
+            this.getCurrentKey()
+          ] === ASLANDataInsertionType.DEFAULT) &&
+        this.getLatestResult()[this.getCurrentKey()] &&
+        typeof this.getLatestResult()[this.getCurrentKey()] !== 'object') {
+        this.currentValue = this.parserSettings.appendSeparator;
+        this.storeCurrentValue();
+      }
+      this.currentValue = '';
       return;
     }
     if (char === ':') {
@@ -1238,7 +1268,7 @@ export class ASLANParser {
   addEventListener(
     event: 'content' | 'end' | 'end_data',
     callback: ASLANEventHandler,
-    idempotencyKey: string = generateRandomIdempotencyKey()
+    idempotencyKey: string = generateRandomIdempotencyKey(),
   ) {
     if (this.listenerIdempotencyKeys[idempotencyKey]) {
       return callback;
@@ -1254,16 +1284,17 @@ export class ASLANParser {
     callback: ASLANEventHandler,
   ) {
     const eventName = event === 'end_data' ? 'endData' : event;
-    (this.parserSettings.eventListeners[eventName] as any) = this.parserSettings.eventListeners[eventName].filter(
-      (listener) => listener !== callback,
-    );
+    (this.parserSettings.eventListeners[eventName] as any) =
+      this.parserSettings.eventListeners[eventName].filter(
+        (listener) => listener !== callback,
+      );
     Object.entries(this.listenerIdempotencyKeys).forEach(([key, value]) => {
       if (value === callback) {
         delete this.listenerIdempotencyKeys[key];
       }
     });
   }
-  
+
   clearEventListeners() {
     this.listenerIdempotencyKeys = {};
     this.parserSettings.eventListeners = {

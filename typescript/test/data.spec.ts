@@ -95,4 +95,16 @@ describe('ASLANParser Data', () => {
       lo: 'World!',
     });
   });
+
+  test('parses simple string with append separator', () => {
+    const parser = new ASLANParser({ appendSeparator: ' ' });
+    const result = parser.parse(
+      '[asland_hi]Hello[asland_lo]World![asland_hi]Hello[asland_hi]World!',
+    );
+    expect(result).toEqual({
+      _default: null,
+      hi: 'Hello Hello World!',
+      lo: 'World!',
+    });
+  });
 });
