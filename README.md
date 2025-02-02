@@ -3,6 +3,21 @@ An LLM stream compatible structured data format that lets you safely output, par
 
 ASLAN gives you the power of your favorite data format, parsable with a simple state machine based parser, without worrying that content you send to your users will be completely unrenderable.
 
+## Installation for JS
+[![npm](https://img.shields.io/npm/v/aslang.svg)](https://www.npmjs.com/package/aslang)
+
+### pnpm
+```
+pnpm add aslang
+```
+
+### npm
+```
+npm install aslang
+```
+
+See [typescript README.md](https://github.com/jayfoss/ASLAN/blob/main/typescript/README.md) for usage
+
 ## Why not JSON, XML, YAML, TOML, Markdown, [Insert favorite format here]?
 Most other data formats heavily rely on special characters which often appear in user generated content, and aren't always reliably escaped in LLM output especially in long context windows.
 
