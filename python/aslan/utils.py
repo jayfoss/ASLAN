@@ -37,9 +37,9 @@ def deep_copy(source: T) -> T:
 
             if value is None or not isinstance(value, (dict, list)):
                 if is_current_array:
-                    for i in range(key):
+                    while len(current_target) <= key:
                         current_target.append(None)
-                    current_target.append(value)
+                    current_target[key] = value
                 else:
                     current_target[key] = value
                 continue
@@ -47,9 +47,9 @@ def deep_copy(source: T) -> T:
             is_value_array = isinstance(value, list)
             new_target = [] if is_value_array else {}
             if is_current_array:
-                for i in range(key):
+                while len(current_target) <= key:
                     current_target.append(None)
-                current_target.append(new_target)
+                current_target[key] = new_target
             else:
                 current_target[key] = new_target
 

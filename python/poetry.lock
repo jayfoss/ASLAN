@@ -68,7 +68,21 @@ pluggy = ">=1.5,<2"
 [package.extras]
 dev = ["argcomplete", "attrs (>=19.2)", "hypothesis (>=3.56)", "mock", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
+[[package]]
+name = "syrupy"
+version = "4.8.1"
+description = "Pytest Snapshot Test Utility"
+optional = false
+python-versions = ">=3.8.1"
+files = [
+    {file = "syrupy-4.8.1-py3-none-any.whl", hash = "sha256:274f97cbaf44175f5e478a2f3a53559d31f41c66c6bf28131695f94ac893ea00"},
+    {file = "syrupy-4.8.1.tar.gz", hash = "sha256:8da8c0311e6d92de0b15767768c6ab98982b7b4a4c67083c08fbac3fbad4d44c"},
+]
+
+[package.dependencies]
+pytest = ">=7.0.0,<9.0.0"
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "bf6f49ec64a608c5f7ee13c03b8e8e4815bf0fae5dbda81ea9fb3408fe08a277"
+content-hash = "3c5e7b60357ebdfc9d39d4833841692cc7f96c0659cd5360660117ce8f2fc1ee"

@@ -1,7 +1,7 @@
 from aslan.aslan_parser import ASLANParser, ASLANInstruction, ASLANEndDataInstruction
 from aslan.utils import deep_copy
 
-def test_parses_simple_string_with_instructions():
+def test_parses_simple_string_with_instructions(snapshot):
     parser = ASLANParser()
     content_events = []
     end_events = []
@@ -24,9 +24,9 @@ def test_parses_simple_string_with_instructions():
         '[asland_styled_text][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[aslanp][aslani_italic][aslani_underline]This is italic and underlined text.[aslanp][aslani_size:large][aslani_font:monospace]This is large monospace text.'
     )
 
-    assert content_events == snapshot('instruction-events-content')
-    assert end_events == snapshot('instruction-events-end')
-    assert end_data_events == snapshot('instruction-events-end-data')
+    assert content_events == snapshot(name='instruction-events-content')
+    assert end_events == snapshot(name='instruction-events-end')
+    assert end_data_events == snapshot(name='instruction-events-end-data')
     assert result == {
         '_default': None,
         'styled_text': [
@@ -36,7 +36,7 @@ def test_parses_simple_string_with_instructions():
         ]
     }
 
-def test_parses_simple_string_with_instructions_and_data_with_l_arg():
+def test_parses_simple_string_with_instructions_and_data_with_l_arg(snapshot):
     parser = ASLANParser()
     content_events = []
     end_events = []
@@ -59,15 +59,15 @@ def test_parses_simple_string_with_instructions_and_data_with_l_arg():
         '[asland_styled_text:l][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[asland_styled_text][aslanp][aslani_italic][aslani_color:blue]This is italic and blue text.'
     )
 
-    assert content_events == snapshot('instruction-events-content')
-    assert end_events == snapshot('instruction-events-end')
-    assert end_data_events == snapshot('instruction-events-end-data')
+    assert content_events == snapshot(name='instruction-events-content')
+    assert end_events == snapshot(name='instruction-events-end')
+    assert end_data_events == snapshot(name='instruction-events-end-data')
     assert result == {
         '_default': None,
         'styled_text': ['This is italic and blue text.']
     }
 
-def test_parses_simple_string_with_instructions_and_data_with_f_arg():
+def test_parses_simple_string_with_instructions_and_data_with_f_arg(snapshot):
     parser = ASLANParser()
     content_events = []
     end_events = []
@@ -90,15 +90,15 @@ def test_parses_simple_string_with_instructions_and_data_with_f_arg():
         '[asland_styled_text:f][aslanp][aslani_bold][aslani_color:red]This is bold and red text.[asland_styled_text][aslanp][aslani_italic][aslani_color:blue]This is italic and blue text.'
     )
 
-    assert content_events == snapshot('instruction-events-content')
-    assert end_events == snapshot('instruction-events-end')
-    assert end_data_events == snapshot('instruction-events-end-data')
+    assert content_events == snapshot(name='instruction-events-content')
+    assert end_events == snapshot(name='instruction-events-end')
+    assert end_data_events == snapshot(name='instruction-events-end-data')
     assert result == {
         '_default': None,
         'styled_text': ['This is bold and red text.']
     }
 
-def test_parses_simple_string_with_instructions_no_part():
+def test_parses_simple_string_with_instructions_no_part(snapshot):
     parser = ASLANParser()
     content_events = []
     end_events = []
@@ -121,9 +121,9 @@ def test_parses_simple_string_with_instructions_no_part():
         '[asland_test][aslana][asland][aslano][asland_styled_text][aslani_bold][aslani_color:red]This is bold and red text.[asland_next]Next item'
     )
 
-    assert content_events == snapshot('instruction-events-content')
-    assert end_events == snapshot('instruction-events-end')
-    assert end_data_events == snapshot('instruction-events-end-data')
+    assert content_events == snapshot(name='instruction-events-content')
+    assert end_events == snapshot(name='instruction-events-end')
+    assert end_data_events == snapshot(name='instruction-events-end-data')
     assert result == {
         '_default': None,
         'test': [
