@@ -1,0 +1,16 @@
+[package]
+name = "aslan"
+version = "0.1.0"
+edition = "2021"
+description = "Parser for ASLAN markup language"
+license = "MIT"
+authors = ["Jerzy Foss"]
+repository = "https://github.com/jayfoss/ASLAN"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rand = "0.8"
+
+[dev-dependencies]
+insta = { version = "1.40", features = ["json"] }
