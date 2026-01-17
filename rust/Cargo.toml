@@ -6,6 +6,9 @@ description = "Parser for ASLAN markup language"
 license = "MIT"
 authors = ["Jerzy Foss"]
 repository = "https://github.com/jayfoss/ASLAN"
+readme = "README.md"
+keywords = ["parser", "aslan", "markup", "streaming"]
+categories = ["parsing", "text-processing"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
