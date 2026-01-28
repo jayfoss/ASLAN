@@ -170,6 +170,7 @@ pub struct ASLANParserSettings {
     pub multi_aslan_output: bool,
     pub collapse_object_start_whitespace: bool,
     pub append_separator: String,
+    pub max_object_depth: Option<usize>,
 }
 
 #[derive(Debug, Clone)]
@@ -200,6 +201,7 @@ impl Default for ASLANParserSettings {
             multi_aslan_output: false,
             collapse_object_start_whitespace: true,
             append_separator: String::new(),
+            max_object_depth: None,
         }
     }
 }
@@ -489,6 +491,12 @@ impl ASLANParser {
         &mut self.stack.last_mut().unwrap().inner_result
     }
 
+    fn get_object_depth(&self) -> usize {
+        // Stack always has at least 1 frame (root)
+        // Object depth = stack.len() - 1 (root doesn't count as object nesting)
+        self.stack.len().saturating_sub(1)
+    }
+
     fn get_2nd_most_recent_material_delimiter(&self) -> Option<&ASLANDelimiterType> {
         let mut excluded = HashSet::new();
         excluded.insert(ASLANDelimiterType::Comment);
@@ -724,6 +732,20 @@ impl ASLANParser {
             // VALID OBJECT DELIMITER
             self.state = ASLANParserState::Object;
             self.delimiter_buffer.clear();
+
+            // Check if at max object depth - always close, never create deeper nesting
+            if let Some(max_depth) = self.parser_settings.max_object_depth {
+                if self.get_object_depth() >= max_depth {
+                    if self.stack.len() > 1 {
+                        self.emit_end_events_if_required();
+                        self.emit_end_data_events_if_required();
+                        self.sync_stack_to_root();
+                        self.stack.pop();
+                    }
+                    return;
+                }
+            }
+
             let second_most_recent = self.get_2nd_most_recent_material_delimiter().copied();
             
             if self.get_object_safe_latest_result() || second_most_recent != Some(ASLANDelimiterType::Data) {

@@ -105,6 +105,7 @@ export type ASLANParserSettings = {
   multiAslanOutput: boolean;
   collapseObjectStartWhitespace: boolean;
   appendSeparator: string;
+  maxObjectDepth: number | undefined;
 };
 
 enum ASLANDataInsertionType {
@@ -192,6 +193,7 @@ function createDefaultParserSettings(): ASLANParserSettings {
     multiAslanOutput: false,
     collapseObjectStartWhitespace: true,
     appendSeparator: '',
+    maxObjectDepth: undefined,
   };
 }
 
@@ -561,6 +563,20 @@ export class ASLANParser {
       //VALID OBJECT DELIMITER
       this.state = ASLANParserState.OBJECT;
       this.delimiterBuffer = '';
+
+      // Check if at max object depth - always close, never create deeper nesting
+      if (
+        this.parserSettings.maxObjectDepth !== undefined &&
+        this.getObjectDepth() >= this.parserSettings.maxObjectDepth
+      ) {
+        if (this.stack.length > 1) {
+          this.emitEndEventsIfRequired();
+          this.emitEndDataEventsIfRequired();
+          this.stack.pop();
+        }
+        return;
+      }
+
       const secondMostRecentMaterialDelimiter =
         this.get2ndMostRecentMaterialDelimiter();
       if (
@@ -1663,6 +1679,12 @@ export class ASLANParser {
 
   private getLatestResult() {
     return this.stack[this.stack.length - 1].innerResult as any;
+  }
+
+  private getObjectDepth(): number {
+    // Stack always has at least 1 frame (root)
+    // Object depth = stack.length - 1 (root doesn't count as object nesting)
+    return this.stack.length - 1;
   }
 
   private get2ndMostRecentMaterialDelimiter() {

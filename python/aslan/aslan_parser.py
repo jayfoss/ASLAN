@@ -103,6 +103,7 @@ class ASLANParserSettings(TypedDict):
     multiAslanOutput: bool
     collapseObjectStartWhitespace: bool
     appendSeparator: str
+    maxObjectDepth: Optional[int]
 
 class ASLANDataInsertionType(Enum):
     DEFAULT = 'DEFAULT'
@@ -155,6 +156,7 @@ def create_default_parser_settings() -> ASLANParserSettings:
         'multiAslanOutput': False,
         'collapseObjectStartWhitespace': True,
         'appendSeparator': '',
+        'maxObjectDepth': None,
     }
 
 class ASLANParser:
@@ -450,6 +452,16 @@ class ASLANParser:
             # VALID OBJECT DELIMITER
             self.state = ASLANParserState.OBJECT
             self.delimiter_buffer = ''
+
+            # Check if at max object depth - always close, never create deeper nesting
+            max_depth = self.parser_settings.get('maxObjectDepth')
+            if max_depth is not None and self.get_object_depth() >= max_depth:
+                if len(self.stack) > 1:
+                    self.emit_end_events_if_required()
+                    self.emit_end_data_events_if_required()
+                    self.stack.pop()
+                return
+
             second_most_recent_material_delimiter = self.get_2nd_most_recent_material_delimiter()
             if (self.get_object_safe_latest_result() or 
                 second_most_recent_material_delimiter != ASLANDelimiterType.DATA):
@@ -1310,6 +1322,11 @@ class ASLANParser:
 
     def get_latest_result(self):
         return self.stack[-1]['innerResult']
+
+    def get_object_depth(self) -> int:
+        # Stack always has at least 1 frame (root)
+        # Object depth = len(stack) - 1 (root doesn't count as object nesting)
+        return len(self.stack) - 1
 
     def get_2nd_most_recent_material_delimiter(self):
         return self.recent_delimiters.get_nth_most_recent_not_in(

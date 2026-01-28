@@ -220,6 +220,61 @@ It is RECOMMENDED that the default value for `collapseObjectStartWhitespace` be 
 }
 ```
 
+#### 7.2 The `maxObjectDepth` setting
+
+ASLAN parsers MUST implement the `maxObjectDepth` setting which limits the maximum depth of `object` nesting. When set, the `object` delimiter behavior becomes deterministic based on the current nesting depth:
+
+- At depths below `maxObjectDepth`: The `object` delimiter follows normal open/close logic based on content
+- At depths equal to or exceeding `maxObjectDepth`: The `object` delimiter always closes the current block (never creates deeper nesting)
+
+This setting is particularly useful when working with LLM outputs that have a known, fixed structure depth. Setting `maxObjectDepth` to `1` makes the `object` delimiter binary: it will always open at depth 0 and always close at depth 1, eliminating ambiguity caused by whitespace or empty content.
+
+The default value for `maxObjectDepth` MUST be unset/undefined/None, which means unlimited depth (preserving backward compatibility).
+
+##### 7.2.1 Example `maxObjectDepth` usage
+
+1. The problem: With `collapseObjectStartWhitespace` enabled, empty or whitespace-only content can cause unexpected nesting. Consider:
+
+```aslan
+[asland_edit1][aslano]
+[asland_text]
+[aslano]
+
+[asland_edit2][aslano]
+[asland_text]This content gets nested incorrectly
+[aslano]
+```
+
+Without `maxObjectDepth`, the empty `text` field in `edit1` causes the second `[aslano]` to create a nested object instead of closing, resulting in `edit2` being incorrectly nested inside `edit1.text`.
+
+2. The solution: With `maxObjectDepth` set to `1`:
+
+```aslan
+[asland_edit1][aslano]
+[asland_text]
+[aslano]
+
+[asland_edit2][aslano]
+[asland_text]This content is correctly placed
+[aslano]
+```
+
+is equivalent to the JSON:
+
+```json
+{
+  "_default": null,
+  "edit1": {
+    "text": "\n"
+  },
+  "edit2": {
+    "text": "This content is correctly placed\n"
+  }
+}
+```
+
+The `object` delimiter after `edit1` (at depth 0) creates an object. The `object` delimiter after `text` (at depth 1, which equals `maxObjectDepth`) always closes, regardless of content. This ensures predictable structure for single-level object nesting.
+
 ### 8. Rules for `instruction`s
 `instruction` delimiters MUST adhere to the syntax `[<PREFIX>i_<CONTENT>]` (or `[<PREFIX>i_<CONTENT>:<ARG0>:<ARG1>:...]` when using args) where `<CONTENT>` is the name of `instruction` to run.
 

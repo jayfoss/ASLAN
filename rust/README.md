@@ -102,12 +102,36 @@ let result = parser.parse(
 use aslan::{ASLANParser, ASLANParserSettings};
 
 let mut parser = ASLANParser::with_settings(ASLANParserSettings {
-    strict_start: true,           // Require [aslang] to start parsing
-    strict_end: true,             // Stop parsing at [aslans]
-    collapse_whitespace: true,    // Collapse whitespace at object/array starts
+    strict_start: true,                      // Require [aslang] to start parsing
+    strict_end: true,                        // Stop parsing at [aslans]
+    collapse_object_start_whitespace: true,  // Collapse whitespace at object/array starts
+    max_object_depth: Some(1),               // Limit object nesting to 1 level
     ..Default::default()
 });
 ```
+
+### Limiting Object Depth
+
+The `max_object_depth` setting makes the `[aslano]` delimiter deterministic based on nesting level:
+
+```rust
+use aslan::{ASLANParser, ASLANParserSettings};
+
+// With max_object_depth: Some(1), [aslano] is binary:
+// - At depth 0: always opens an object
+// - At depth 1: always closes the object
+let mut parser = ASLANParser::with_settings(ASLANParserSettings {
+    max_object_depth: Some(1),
+    ..Default::default()
+});
+
+let result = parser.parse(
+    "[asland_edit][aslano][asland_text]content[aslano]"
+);
+// { "_default": null, "edit": { "text": "content" } }
+```
+
+This is useful for LLM outputs with known structure depth, eliminating ambiguity from whitespace or empty content.
 
 ## Features
 
